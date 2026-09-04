@@ -1,945 +1,1092 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Riviz AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<title>Riviz AI</title>
 
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at top left, #263b73 0%, transparent 35%),
-        radial-gradient(circle at bottom right, #4b1f68 0%, transparent 35%),
-        #080b14;
-      color: white;
-      min-height: 100vh;
-    }
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    header {
-      height: 70px;
-      padding: 0 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      background: rgba(8,11,20,0.8);
-      backdrop-filter: blur(15px);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
+:root {
+  --bg: #080b14;
+  --panel: rgba(18, 23, 38, .92);
+  --panel2: rgba(255,255,255,.06);
+  --text: #f5f7ff;
+  --muted: #9ca6bd;
+  --border: rgba(255,255,255,.1);
+  --accent: #735cff;
+  --accent2: #00c8ff;
+}
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 22px;
-      font-weight: bold;
-    }
+body.light {
+  --bg: #f2f5fb;
+  --panel: rgba(255,255,255,.94);
+  --panel2: rgba(0,0,0,.05);
+  --text: #151a26;
+  --muted: #657086;
+  --border: rgba(0,0,0,.1);
+}
 
-    .logo-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #7c5cff, #00d4ff);
-      box-shadow: 0 0 25px rgba(0,212,255,0.25);
-    }
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(circle at 10% 10%, #263b73 0, transparent 30%),
+    radial-gradient(circle at 90% 90%, #4b1f68 0, transparent 30%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: .3s;
+}
 
-    .controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      120deg,
+      transparent,
+      rgba(115,92,255,.04),
+      transparent
+    );
+  animation: bgMove 8s infinite alternate;
+}
 
-    select,
-    button {
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.07);
-      color: white;
-      border-radius: 10px;
-      padding: 9px 12px;
-      cursor: pointer;
-    }
+@keyframes bgMove {
+  from { transform: translateX(-5%); }
+  to { transform: translateX(5%); }
+}
 
-    select option {
-      background: #111522;
-      color: white;
-    }
+/* HEADER */
 
-    button:hover,
-    select:hover {
-      background: rgba(255,255,255,0.12);
-    }
+header {
+  height: 68px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8,11,20,.78);
+  backdrop-filter: blur(18px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
 
-    main {
-      width: 100%;
-      max-width: 950px;
-      margin: auto;
-      min-height: calc(100vh - 70px);
-      padding: 25px 18px;
-    }
+body.light header {
+  background: rgba(255,255,255,.8);
+}
 
-    #chat {
-      padding: 15px 5px 130px;
-    }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 21px;
+  font-weight: bold;
+}
 
-    .welcome {
-      min-height: 65vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
+.logo-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow: 0 0 25px rgba(0,200,255,.25);
+}
 
-    .welcome h1 {
-      font-size: clamp(38px, 8vw, 70px);
-      background: linear-gradient(90deg, #fff, #9edcff, #b99cff);
-      -webkit-background-clip: text;
-      color: transparent;
-      margin-bottom: 12px;
-    }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
 
-    .welcome p {
-      color: #aeb6ca;
-      font-size: 17px;
-      max-width: 600px;
-    }
+.made-by {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: bold;
+  margin-right: 5px;
+}
 
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 28px;
-    }
+select,
+button {
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
 
-    .suggestion {
-      padding: 12px 15px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      cursor: pointer;
-      color: #dce2f0;
-    }
+select option {
+  background: #111522;
+  color: white;
+}
 
-    .suggestion:hover {
-      background: rgba(124,92,255,0.18);
-    }
+button:hover,
+select:hover {
+  background: rgba(115,92,255,.16);
+}
 
-    .message {
-      display: flex;
-      margin: 18px 0;
-      width: 100%;
-    }
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    .message.user {
-      justify-content: flex-end;
-    }
+/* LAYOUT */
 
-    .bubble {
-      max-width: 78%;
-      padding: 13px 16px;
-      border-radius: 17px;
-      line-height: 1.55;
-      word-wrap: break-word;
-    }
+.app {
+  display: flex;
+  min-height: calc(100vh - 68px);
+}
 
-    .user .bubble {
-      background: linear-gradient(135deg, #6651db, #5140b7);
-      border-bottom-right-radius: 5px;
-    }
+.sidebar {
+  width: 270px;
+  border-right: 1px solid var(--border);
+  padding: 15px;
+  background: rgba(0,0,0,.12);
+  backdrop-filter: blur(15px);
+  position: fixed;
+  top: 68px;
+  bottom: 0;
+  left: 0;
+  overflow-y: auto;
+  z-index: 15;
+}
 
-    .assistant .bubble {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-bottom-left-radius: 5px;
-      color: #edf1fa;
-    }
+.sidebar-title {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 18px 8px 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
-    .bubble strong {
-      color: white;
-    }
+.new-chat {
+  width: 100%;
+  background: linear-gradient(135deg,var(--accent),var(--accent2));
+  border: none;
+  color: white;
+  font-weight: bold;
+}
 
-    .bubble code {
-      background: rgba(0,0,0,0.35);
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-family: monospace;
-    }
+.chat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
-    .bubble pre {
-      background: #05070d;
-      padding: 14px;
-      border-radius: 10px;
-      overflow-x: auto;
-      margin: 10px 0;
-    }
+.chat-item {
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
 
-    .bubble pre code {
-      background: none;
-      padding: 0;
-    }
+.chat-item:hover,
+.chat-item.active {
+  background: var(--panel2);
+  color: var(--text);
+}
 
-    .bubble ul,
-    .bubble ol {
-      padding-left: 24px;
-      margin: 8px 0;
-    }
+.chat-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 
-    .typing {
-      display: inline-flex;
-      gap: 5px;
-      padding: 5px;
-    }
+.delete-chat {
+  border: none;
+  background: transparent;
+  padding: 2px 5px;
+  color: var(--muted);
+}
 
-    .typing span {
-      width: 7px;
-      height: 7px;
-      background: #aeb6ca;
-      border-radius: 50%;
-      animation: bounce 1.2s infinite;
-    }
+.main {
+  margin-left: 270px;
+  width: calc(100% - 270px);
+  max-width: 1000px;
+  margin-right: auto;
+  margin-top: 0;
+  min-height: calc(100vh - 68px);
+  position: relative;
+}
 
-    .typing span:nth-child(2) {
-      animation-delay: .15s;
-    }
+#chat {
+  padding: 20px 22px 150px;
+}
 
-    .typing span:nth-child(3) {
-      animation-delay: .3s;
-    }
+/* WELCOME */
 
-    @keyframes bounce {
-      0%, 60%, 100% {
-        transform: translateY(0);
-      }
+.welcome {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
 
-      30% {
-        transform: translateY(-5px);
-      }
-    }
+.welcome h1 {
+  font-size: clamp(45px,8vw,75px);
+  background: linear-gradient(90deg,#fff,#9edcff,#b99cff);
+  -webkit-background-clip: text;
+  color: transparent;
+  margin-bottom: 12px;
+}
 
-    .input-area {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 15px 18px 20px;
-      background: linear-gradient(
-        transparent,
-        rgba(8,11,20,0.96) 30%
-      );
-      z-index: 5;
-    }
+.welcome p {
+  color: var(--muted);
+  font-size: 17px;
+  max-width: 650px;
+}
 
-    .input-box {
-      max-width: 900px;
-      margin: auto;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(20,24,38,0.95);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 17px;
-      padding: 8px;
-    }
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 30px;
+}
 
-    #messageInput {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: white;
-      font-size: 16px;
-      padding: 12px;
-    }
+.quick {
+  min-width: 130px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--panel2);
+  cursor: pointer;
+  transition: .2s;
+}
 
-    #messageInput::placeholder {
-      color: #7f879b;
-    }
+.quick:hover {
+  transform: translateY(-3px);
+  background: rgba(115,92,255,.17);
+}
 
-    #sendBtn {
-      width: 45px;
-      height: 45px;
-      border-radius: 13px;
-      background: linear-gradient(135deg, #735cff, #00bfff);
-      border: none;
-      font-size: 18px;
-    }
+/* MESSAGES */
 
-    #sendBtn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+.message {
+  display: flex;
+  margin: 20px 0;
+  width: 100%;
+  gap: 10px;
+}
 
-    .status {
-      text-align: center;
-      color: #737c92;
-      font-size: 12px;
-      margin-top: 7px;
-    }
+.message.user {
+  justify-content: flex-end;
+}
 
-    @media (max-width: 600px) {
-      header {
-        padding: 0 12px;
-      }
+.avatar {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg,var(--accent),var(--accent2));
+  font-size: 15px;
+}
 
-      .logo {
-        font-size: 18px;
-      }
+.message.user .avatar {
+  order: 2;
+}
 
-      .controls button {
-        display: none;
-      }
+.bubble {
+  max-width: 76%;
+  padding: 13px 16px;
+  border-radius: 17px;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
 
-      select {
-        padding: 8px;
-      }
+.user .bubble {
+  background: linear-gradient(135deg,#6651db,#5140b7);
+  color: white;
+  border-bottom-right-radius: 5px;
+}
 
-      main {
-        padding: 10px;
-      }
+.assistant .bubble {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 5px;
+}
 
-      .bubble {
-        max-width: 90%;
-      }
+.bubble strong {
+  font-weight: 700;
+}
 
-      .welcome h1 {
-        font-size: 46px;
-      }
-    }
-  </style>
+.bubble code {
+  background: rgba(0,0,0,.35);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+.bubble pre {
+  background: #05070d;
+  padding: 14px;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.bubble ul,
+.bubble ol {
+  padding-left: 24px;
+  margin: 8px 0;
+}
+
+.bubble li {
+  margin: 4px 0;
+}
+
+/* MESSAGE TOOLS */
+
+.message-tools {
+  display: flex;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.message-tools button {
+  font-size: 12px;
+  padding: 5px 8px;
+  opacity: .75;
+}
+
+.message-tools button:hover {
+  opacity: 1;
+}
+
+/* TYPING */
+
+.typing {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.typing span {
+  width: 7px;
+  height: 7px;
+  background: var(--muted);
+  border-radius: 50%;
+  animation: bounce 1.2s infinite;
+}
+
+.typing span:nth-child(2) {
+  animation-delay: .15s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: .3s;
+}
+
+@keyframes bounce {
+  0%,60%,100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-5px);
+  }
+}
+
+/* INPUT */
+
+.input-area {
+  position: fixed;
+  bottom: 0;
+  left: 270px;
+  right: 0;
+  padding: 15px 20px 18px;
+  background: linear-gradient(
+    transparent,
+    rgba(8,11,20,.97) 30%
+  );
+  z-index: 10;
+}
+
+body.light .input-area {
+  background: linear-gradient(
+    transparent,
+    rgba(242,245,251,.97) 30%
+  );
+}
+
+.input-box {
+  max-width: 900px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  padding: 7px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.25);
+}
+
+#messageInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 16px;
+  padding: 12px;
+}
+
+#messageInput::placeholder {
+  color: var(--muted);
+}
+
+.send-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 13px;
+  background: linear-gradient(135deg,var(--accent),var(--accent2));
+  border: none;
+  font-size: 18px;
+  color: white;
+}
+
+.status {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 7px;
+}
+
+/* TOOLS PANEL */
+
+.tool-panel {
+  position: fixed;
+  right: 20px;
+  top: 85px;
+  width: 330px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  display: none;
+  z-index: 30;
+}
+
+.tool-panel.open {
+  display: block;
+}
+
+.tool-panel h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.tool-section {
+  margin-bottom: 18px;
+}
+
+.tool-section h3 {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.tool-input,
+.tool-select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.tool-result {
+  padding: 10px;
+  background: var(--panel2);
+  border-radius: 10px;
+  min-height: 40px;
+  word-break: break-word;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 7px;
+}
+
+/* SEARCH */
+
+.search-box {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+/* MOBILE */
+
+.mobile-menu {
+  display: none;
+}
+
+@media(max-width:800px) {
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: .25s;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .input-area {
+    left: 0;
+  }
+
+  .mobile-menu {
+    display: flex;
+  }
+
+  .made-by {
+    display: none;
+  }
+
+  .header-right {
+    gap: 5px;
+  }
+
+  .bubble {
+    max-width: 86%;
+  }
+
+  .tool-panel {
+    left: 10px;
+    right: 10px;
+    width: auto;
+  }
+}
+
+@media(max-width:500px) {
+
+  header {
+    padding: 0 10px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  .logo-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  #chat {
+    padding: 12px 10px 145px;
+  }
+
+  .quick {
+    min-width: 105px;
+  }
+
+  .bubble {
+    max-width: 82%;
+  }
+
+  .input-area {
+    padding: 10px;
+  }
+
+  .input-box {
+    padding: 5px;
+  }
+}
+</style>
 </head>
 
 <body>
 
 <header>
+
   <div class="logo">
+    <button class="icon-btn mobile-menu" onclick="toggleSidebar()">☰</button>
     <div class="logo-icon">✦</div>
     Riviz AI
   </div>
 
-  <div class="controls">
+  <div class="header-right">
+
+    <div class="made-by">
+      Made by Anant
+    </div>
+
+    <button class="icon-btn" onclick="toggleTools()" title="Tools">
+      🧰
+    </button>
+
+    <button class="icon-btn" onclick="toggleTheme()" title="Theme">
+      🌙
+    </button>
+
     <select id="mode">
       <option value="auto">AUTO</option>
       <option value="online">ONLINE</option>
       <option value="offline">OFFLINE</option>
     </select>
 
-    <button onclick="clearChat()">Clear</button>
+    <button class="icon-btn" onclick="clearChat()" title="Clear">
+      🗑️
+    </button>
+
   </div>
+
 </header>
 
-<main>
-  <div id="chat">
 
-    <div class="welcome" id="welcome">
-      <h1>Riviz AI</h1>
+<div class="app">
 
-      <p>
-        Your smart AI assistant. Online, offline, or automatic.
-      </p>
+  <aside class="sidebar" id="sidebar">
 
-      <div class="suggestions">
+    <button class="new-chat" onclick="newChat()">
+      ＋ New Chat
+    </button>
 
-        <div class="suggestion"
-          onclick="useSuggestion('Explain photosynthesis simply')">
-          🌱 Explain photosynthesis
-        </div>
+    <div class="sidebar-title">
+      Conversations
+    </div>
 
-        <div class="suggestion"
-          onclick="useSuggestion('Tell me a funny joke')">
-          😂 Tell me a joke
-        </div>
+    <input
+      class="search-box"
+      id="chatSearch"
+      placeholder="🔍 Search chats..."
+      oninput="renderChatList()"
+    >
 
-        <div class="suggestion"
-          onclick="useSuggestion('Give me a cool science fact')">
-          🔬 Science fact
-        </div>
+    <div class="chat-list" id="chatList"></div>
 
-        <div class="suggestion"
-          onclick="useSuggestion('What is artificial intelligence?')">
-          🤖 What is AI?
-        </div>
+  </aside>
 
-      </div>
+
+  <main class="main">
+
+    <div id="chat"></div>
+
+  </main>
+
+</div>
+
+
+<!-- TOOLS -->
+
+<div class="tool-panel" id="tools">
+
+  <h2>🧰 Riviz Tools</h2>
+
+
+  <!-- CALCULATOR -->
+
+  <div class="tool-section">
+
+    <h3>🧮 Calculator</h3>
+
+    <input
+      id="calcInput"
+      class="tool-input"
+      placeholder="Example: 25 * 4 + 10"
+    >
+
+    <button onclick="calculate()">
+      Calculate
+    </button>
+
+    <div id="calcResult" class="tool-result">
+      Result will appear here
     </div>
 
   </div>
-</main>
+
+
+  <!-- TIMER -->
+
+  <div class="tool-section">
+
+    <h3>⏱️ Timer</h3>
+
+    <input
+      id="timerInput"
+      class="tool-input"
+      type="number"
+      placeholder="Seconds"
+    >
+
+    <button onclick="startTimer()">
+      Start
+    </button>
+
+    <button onclick="stopTimer()">
+      Stop
+    </button>
+
+    <div id="timerResult" class="tool-result">
+      Ready
+    </div>
+
+  </div>
+
+
+  <!-- NOTES -->
+
+  <div class="tool-section">
+
+    <h3>📝 Notes</h3>
+
+    <textarea
+      id="notes"
+      class="tool-input"
+      rows="5"
+      placeholder="Write your notes..."
+    ></textarea>
+
+    <button onclick="saveNotes()">
+      Save Notes
+    </button>
+
+    <div id="notesStatus" class="tool-result">
+      Notes are saved in your browser.
+    </div>
+
+  </div>
+
+
+  <!-- WORD COUNTER -->
+
+  <div class="tool-section">
+
+    <h3>🔤 Word Counter</h3>
+
+    <textarea
+      id="wordInput"
+      class="tool-input"
+      rows="4"
+      placeholder="Paste text..."
+      oninput="countWords()"
+    ></textarea>
+
+    <div id="wordResult" class="tool-result">
+      0 words • 0 characters
+    </div>
+
+  </div>
+
+
+  <!-- UNIT CONVERTER -->
+
+  <div class="tool-section">
+
+    <h3>📏 Unit Converter</h3>
+
+    <input
+      id="unitInput"
+      class="tool-input"
+      type="number"
+      placeholder="Value"
+    >
+
+    <select id="unitType" class="tool-select">
+
+      <option value="km-miles">
+        Kilometers → Miles
+      </option>
+
+      <option value="miles-km">
+        Miles → Kilometers
+      </option>
+
+      <option value="kg-lb">
+        Kilograms → Pounds
+      </option>
+
+      <option value="lb-kg">
+        Pounds → Kilograms
+      </option>
+
+      <option value="c-f">
+        Celsius → Fahrenheit
+      </option>
+
+      <option value="f-c">
+        Fahrenheit → Celsius
+      </option>
+
+    </select>
+
+    <button onclick="convertUnit()">
+      Convert
+    </button>
+
+    <div id="unitResult" class="tool-result">
+      Result
+    </div>
+
+  </div>
+
+
+  <!-- PASSWORD -->
+
+  <div class="tool-section">
+
+    <h3>🔐 Password Generator</h3>
+
+    <input
+      id="passwordLength"
+      class="tool-input"
+      type="number"
+      value="16"
+      min="4"
+      max="64"
+    >
+
+    <button onclick="generatePassword()">
+      Generate
+    </button>
+
+    <div id="passwordResult" class="tool-result">
+      Your password will appear here.
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- INPUT -->
 
 <div class="input-area">
 
   <div class="input-box">
+
+    <button
+      class="icon-btn"
+      onclick="startVoiceInput()"
+      title="Voice input"
+    >
+      🎤
+    </button>
 
     <input
       id="messageInput"
       type="text"
       placeholder="Message Riviz AI..."
       autocomplete="off"
-    />
+    >
 
-    <button id="sendBtn" onclick="sendMessage()">➤</button>
+    <button
+      class="send-btn"
+      id="sendBtn"
+      onclick="sendMessage()"
+    >
+      ➤
+    </button>
 
   </div>
 
   <div class="status" id="status">
-    AUTO mode
+    AUTO • Ready
   </div>
 
 </div>
 
+
 <script>
+
+/* ==========================================
+   ELEMENTS
+========================================== */
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 const statusText = document.getElementById("status");
 const modeSelect = document.getElementById("mode");
+const sidebar = document.getElementById("sidebar");
 
-let conversation = [];
+let timer = null;
+let timerSeconds = 0;
 
 
-/* =========================
-   MARKDOWN
-========================= */
+/* ==========================================
+   CHAT DATA
+========================================== */
 
-function renderMarkdown(text) {
+let chats =
+  JSON.parse(localStorage.getItem("riviz_chats") || "[]");
 
-  if (!text) return "";
+let currentChatId =
+  localStorage.getItem("riviz_current_chat");
 
-  let html = text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+if (!chats.length) {
+  createChat();
+}
 
-  html = html.replace(
-    /```([\s\S]*?)```/g,
-    "<pre><code>$1</code></pre>"
-  );
+if (!currentChatId ||
+    !chats.find(c => c.id === currentChatId)) {
 
-  html = html.replace(
-    /`([^`]+)`/g,
-    "<code>$1</code>"
-  );
+  currentChatId = chats[0].id;
+}
 
-  html = html.replace(
-    /\*\*(.*?)\*\*/g,
-    "<strong>$1</strong>"
-  );
+renderChatList();
+loadCurrentChat();
 
-  html = html.replace(
-    /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
-    "<em>$1</em>"
-  );
 
-  html = html.replace(
-    /^### (.*)$/gm,
-    "<strong>$1</strong>"
-  );
+/* ==========================================
+   CHAT CREATION
+========================================== */
 
-  html = html.replace(
-    /^## (.*)$/gm,
-    "<strong>$1</strong>"
-  );
+function createChat() {
 
-  html = html.replace(
-    /^# (.*)$/gm,
-    "<strong>$1</strong>"
-  );
+  const chatData = {
 
-  html = html.replace(
-    /(?:^|\n)[-*] (.*)(?=\n|$)/g,
-    "<li>$1</li>"
-  );
+    id:
+      Date.now().toString(),
 
-  html = html.replace(
-    /(<li>.*<\/li>)/gs,
-    "<ul>$1</ul>"
-  );
+    name:
+      "New Chat",
 
-  html = html.replace(/\n/g, "<br>");
+    messages: [],
 
-  return html;
+    pinned: false,
+
+    created:
+      Date.now()
+  };
+
+  chats.unshift(chatData);
+
+  currentChatId = chatData.id;
+
+  saveChats();
 }
 
 
-/* =========================
-   ADD MESSAGE
-========================= */
+/* ==========================================
+   SAVE
+========================================== */
 
-function addMessage(text, type) {
+function saveChats() {
 
-  const welcome = document.getElementById("welcome");
+  localStorage.setItem(
+    "riviz_chats",
+    JSON.stringify(chats)
+  );
 
-  if (welcome) {
-    welcome.style.display = "none";
-  }
+  localStorage.setItem(
+    "riviz_current_chat",
+    currentChatId
+  );
 
-  const message = document.createElement("div");
-
-  message.className = "message " + type;
-
-  const bubble = document.createElement("div");
-
-  bubble.className = "bubble";
-
-  if (type === "assistant") {
-    bubble.innerHTML = renderMarkdown(text);
-  } else {
-    bubble.textContent = text;
-  }
-
-  message.appendChild(bubble);
-
-  chat.appendChild(message);
-
-  window.scrollTo({
-    top: document.body.scrollHeight,
-    behavior: "smooth"
-  });
 }
 
 
-/* =========================
-   TYPING
-========================= */
+/* ==========================================
+   CURRENT CHAT
+========================================== */
 
-function showTyping() {
+function getCurrentChat() {
 
-  const message = document.createElement("div");
+  return chats.find(
+    c => c.id === currentChatId
+  );
 
-  message.className = "message assistant";
-
-  message.id = "typingMessage";
-
-  const bubble = document.createElement("div");
-
-  bubble.className = "bubble";
-
-  bubble.innerHTML = `
-    <div class="typing">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-  `;
-
-  message.appendChild(bubble);
-
-  chat.appendChild(message);
 }
 
 
-function removeTyping() {
+/* ==========================================
+   NEW CHAT
+========================================== */
 
-  const typing =
-    document.getElementById("typingMessage");
+function newChat() {
 
-  if (typing) {
-    typing.remove();
+  createChat();
+
+  renderChatList();
+
+  loadCurrentChat();
+
+  if (window.innerWidth < 800) {
+    sidebar.classList.remove("open");
   }
 }
 
 
-/* =========================
-   OFFLINE AI
-========================= */
+/* ==========================================
+   LOAD CHAT
+========================================== */
 
-function offlineAI(message) {
+function loadCurrentChat() {
 
-  const text = message.toLowerCase().trim();
+  const current =
+    getCurrentChat();
 
+  if (!current) return;
 
-  /* Greetings */
+  chat.innerHTML = "";
 
-  if (
-    text === "hi" ||
-    text === "hello" ||
-    text === "hey" ||
-    text.includes("good morning") ||
-    text.includes("good evening")
-  ) {
+  if (!current.messages.length) {
 
-    return "👋 Hello! I'm Riviz AI's offline mode. I can still help with simple questions, calculations and some basic knowledge.";
+    showWelcome();
+
+    return;
   }
 
-
-  /* Who are you */
-
-  if (
-    text.includes("who are you") ||
-    text.includes("what are you")
-  ) {
-
-    return "🤖 I'm Riviz AI. You are currently using my offline browser mode.";
-  }
-
-
-  /* Name */
-
-  if (
-    text.includes("your name")
-  ) {
-
-    return "My name is Riviz AI. ✦";
-  }
-
-
-  /* Addition */
-
-  let match = text.match(
-    /^(-?\d+(?:\.\d+)?)\s*\+\s*(-?\d+(?:\.\d+)?)$/
-  );
-
-  if (match) {
-
-    const a = Number(match[1]);
-    const b = Number(match[2]);
-
-    return `**${a + b}**`;
-  }
-
-
-  /* Subtraction */
-
-  match = text.match(
-    /^(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)$/
-  );
-
-  if (match) {
-
-    const a = Number(match[1]);
-    const b = Number(match[2]);
-
-    return `**${a - b}**`;
-  }
-
-
-  /* Multiplication */
-
-  match = text.match(
-    /^(-?\d+(?:\.\d+)?)\s*(?:\*|x|×)\s*(-?\d+(?:\.\d+)?)$/
-  );
-
-  if (match) {
-
-    const a = Number(match[1]);
-    const b = Number(match[2]);
-
-    return `**${a * b}**`;
-  }
-
-
-  /* Division */
-
-  match = text.match(
-    /^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/
-  );
-
-  if (match) {
-
-    const a = Number(match[1]);
-    const b = Number(match[2]);
-
-    if (b === 0) {
-      return "❌ You cannot divide by zero.";
-    }
-
-    return `**${a / b}**`;
-  }
-
-
-  /* Percentage */
-
-  match = text.match(
-    /^(-?\d+(?:\.\d+)?)\s*%\s*of\s*(-?\d+(?:\.\d+)?)$/
-  );
-
-  if (match) {
-
-    const percent = Number(match[1]);
-    const number = Number(match[2]);
-
-    return `**${(percent / 100) * number}**`;
-  }
-
-
-  /* Simple science */
-
-  if (text.includes("photosynthesis")) {
-
-    return "🌱 Photosynthesis is the process plants use to make food using sunlight, water and carbon dioxide.";
-  }
-
-
-  if (
-    text.includes("what is ai") ||
-    text.includes("artificial intelligence")
-  ) {
-
-    return "🤖 Artificial intelligence (AI) is technology that allows computers to perform tasks that normally need human intelligence.";
-  }
-
-
-  if (text.includes("gravity")) {
-
-    return "🌍 Gravity is a force that pulls objects toward each other. Earth's gravity keeps us on the ground.";
-  }
-
-
-  if (text.includes("water")) {
-
-    return "💧 Water is made of hydrogen and oxygen. Its chemical formula is H₂O.";
-  }
-
-
-  if (text.includes("sun")) {
-
-    return "☀️ The Sun is a star at the center of our solar system.";
-  }
-
-
-  if (text.includes("capital of india")) {
-
-    return "🇮🇳 The capital of India is New Delhi.";
-  }
-
-
-  /* Offline fallback */
-
-  return "📴 I'm currently in offline mode. I can answer basic questions and calculations, but I need the internet and Gemini AI for more advanced questions.";
-}
-
-
-/* =========================
-   ONLINE AI
-========================= */
-
-async function onlineAI(message) {
-
-  const response = await fetch("/api/chat", {
-
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json"
-    },
-
-    body: JSON.stringify({
-      message: message
-    })
-
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.error || "AI request failed"
+  current.messages.forEach(message => {
+
+    addMessage(
+      message.content,
+      message.role,
+      false
     );
-  }
 
-  if (
-    !data.answer ||
-    typeof data.answer !== "string"
-  ) {
-    throw new Error("Empty AI response");
-  }
-
-  return data.answer;
-}
-
-
-/* =========================
-   SEND MESSAGE
-========================= */
-
-async function sendMessage() {
-
-  const userMessage = input.value.trim();
-
-  if (!userMessage) return;
-
-  const selectedMode = modeSelect.value;
-
-  input.value = "";
-
-  sendBtn.disabled = true;
-
-  addMessage(userMessage, "user");
-
-  conversation.push({
-    role: "user",
-    content: userMessage
   });
 
-  showTyping();
-
-  statusText.textContent =
-    selectedMode.toUpperCase() + " • Thinking...";
-
-
-  try {
-
-    let answer = "";
-
-
-    /* =====================
-       OFFLINE
-    ===================== */
-
-    if (selectedMode === "offline") {
-
-      statusText.textContent =
-        "OFFLINE • Browser AI";
-
-      await new Promise(
-        resolve => setTimeout(resolve, 300)
-      );
-
-      answer = offlineAI(userMessage);
-    }
-
-
-    /* =====================
-       ONLINE
-    ===================== */
-
-    else if (selectedMode === "online") {
-
-      statusText.textContent =
-        "ONLINE • Gemini AI";
-
-      answer = await onlineAI(userMessage);
-    }
-
-
-    /* =====================
-       AUTO
-    ===================== */
-
-    else {
-
-      if (navigator.onLine) {
-
-        try {
-
-          statusText.textContent =
-            "AUTO • Trying online AI...";
-
-          answer = await onlineAI(userMessage);
-
-          statusText.textContent =
-            "AUTO • Online AI";
-
-        } catch (error) {
-
-          console.log(
-            "Online AI failed. Using offline mode.",
-            error
-          );
-
-          statusText.textContent =
-            "AUTO • Switching offline...";
-
-          await new Promise(
-            resolve => setTimeout(resolve, 300)
-          );
-
-          answer = offlineAI(userMessage);
-
-          statusText.textContent =
-            "AUTO • Offline fallback";
-        }
-
-      } else {
-
-        statusText.textContent =
-          "AUTO • Offline";
-
-        answer = offlineAI(userMessage);
-      }
-    }
-
-
-    removeTyping();
-
-    addMessage(answer, "assistant");
-
-    conversation.push({
-      role: "assistant",
-      content: answer
-    });
-
-  } catch (error) {
-
-    removeTyping();
-
-    console.error(error);
-
-
-    if (selectedMode === "online") {
-
-      addMessage(
-        "⚠️ Online AI is currently unavailable. Try AUTO mode or OFFLINE mode.",
-        "assistant"
-      );
-
-      statusText.textContent =
-        "ONLINE • Error";
-
-    } else {
-
-      addMessage(
-        "⚠️ Something went wrong.",
-        "assistant"
-      );
-
-      statusText.textContent =
-        "Error";
-    }
-
-  } finally {
-
-    sendBtn.disabled = false;
-
-    input.focus();
-  }
 }
 
 
-/* =========================
-   SUGGESTIONS
-========================= */
+/* ==========================================
+   WELCOME
+========================================== */
 
-function useSuggestion(text) {
-
-  input.value = text;
-
-  input.focus();
-
-  sendMessage();
-}
-
-
-/* =========================
-   CLEAR CHAT
-========================= */
-
-function clearChat() {
-
-  conversation = [];
+function showWelcome() {
 
   chat.innerHTML = `
 
@@ -948,29 +1095,46 @@ function clearChat() {
       <h1>Riviz AI</h1>
 
       <p>
-        Your smart AI assistant. Online, offline, or automatic.
+        Your smart AI assistant.
+        Online, offline, or automatic.
       </p>
 
-      <div class="suggestions">
+      <div class="quick-actions">
 
-        <div class="suggestion"
-          onclick="useSuggestion('Explain photosynthesis simply')">
-          🌱 Explain photosynthesis
+        <div class="quick"
+          onclick="quickPrompt('Explain photosynthesis simply')">
+          🌱<br>
+          Learn
         </div>
 
-        <div class="suggestion"
-          onclick="useSuggestion('Tell me a funny joke')">
-          😂 Tell me a joke
+        <div class="quick"
+          onclick="quickPrompt('Give me a funny joke')">
+          😂<br>
+          Fun
         </div>
 
-        <div class="suggestion"
-          onclick="useSuggestion('Give me a cool science fact')">
-          🔬 Science fact
+        <div class="quick"
+          onclick="quickPrompt('Give me a cool science fact')">
+          🔬<br>
+          Science
         </div>
 
-        <div class="suggestion"
-          onclick="useSuggestion('What is artificial intelligence?')">
-          🤖 What is AI?
+        <div class="quick"
+          onclick="quickPrompt('Write a short story about a robot')">
+          ✍️<br>
+          Write
+        </div>
+
+        <div class="quick"
+          onclick="quickPrompt('Explain artificial intelligence')">
+          🤖<br>
+          AI
+        </div>
+
+        <div class="quick"
+          onclick="quickPrompt('Calculate 25 * 4')">
+          🧮<br>
+          Calculate
         </div>
 
       </div>
@@ -978,21 +1142,1612 @@ function clearChat() {
     </div>
 
   `;
-
-  statusText.textContent =
-    modeSelect.value.toUpperCase() + " mode";
 }
 
 
-/* =========================
-   MODE SWITCH
-========================= */
+/* ==========================================
+   CHAT LIST
+========================================== */
+
+function renderChatList() {
+
+  const list =
+    document.getElementById("chatList");
+
+  const search =
+    document.getElementById("chatSearch")
+      .value
+      .toLowerCase();
+
+  list.innerHTML = "";
+
+  chats
+    .filter(c =>
+      c.name.toLowerCase().includes(search)
+    )
+    .forEach(c => {
+
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "chat-item " +
+        (c.id === currentChatId
+          ? "active"
+          : "");
+
+      item.innerHTML = `
+
+        <span
+          class="chat-name"
+          onclick="switchChat('${c.id}')"
+        >
+          ${c.pinned ? "📌 " : ""}
+          ${escapeHTML(c.name)}
+        </span>
+
+        <button
+          class="delete-chat"
+          onclick="deleteChat('${c.id}', event)"
+        >
+          ×
+        </button>
+
+      `;
+
+      list.appendChild(item);
+
+    });
+
+}
+
+
+/* ==========================================
+   SWITCH CHAT
+========================================== */
+
+function switchChat(id) {
+
+  currentChatId = id;
+
+  saveChats();
+
+  renderChatList();
+
+  loadCurrentChat();
+
+}
+
+
+/* ==========================================
+   DELETE CHAT
+========================================== */
+
+function deleteChat(id, event) {
+
+  event.stopPropagation();
+
+  chats =
+    chats.filter(c => c.id !== id);
+
+  if (!chats.length) {
+    createChat();
+  }
+
+  if (!chats.find(c => c.id === currentChatId)) {
+    currentChatId = chats[0].id;
+  }
+
+  saveChats();
+
+  renderChatList();
+
+  loadCurrentChat();
+}
+
+
+/* ==========================================
+   ADD MESSAGE
+========================================== */
+
+function addMessage(
+  text,
+  type,
+  save = true
+) {
+
+  const welcome =
+    document.getElementById("welcome");
+
+  if (welcome) {
+    welcome.remove();
+  }
+
+  const message =
+    document.createElement("div");
+
+  message.className =
+    "message " + type;
+
+  const avatar =
+    document.createElement("div");
+
+  avatar.className =
+    "avatar";
+
+  avatar.textContent =
+    type === "user"
+      ? "A"
+      : "✦";
+
+  const wrapper =
+    document.createElement("div");
+
+  const bubble =
+    document.createElement("div");
+
+  bubble.className =
+    "bubble";
+
+  if (type === "assistant") {
+
+    bubble.innerHTML =
+      renderMarkdown(text);
+
+  } else {
+
+    bubble.textContent =
+      text;
+
+  }
+
+  wrapper.appendChild(bubble);
+
+
+  if (type === "assistant") {
+
+    const tools =
+      document.createElement("div");
+
+    tools.className =
+      "message-tools";
+
+    tools.innerHTML = `
+
+      <button onclick="copyText(this)">
+        📋 Copy
+      </button>
+
+      <button onclick="speakText(this)">
+        🔊 Speak
+      </button>
+
+      <button onclick="regenerate()">
+        🔄 Regenerate
+      </button>
+
+      <button onclick="likeMessage(this)">
+        👍
+      </button>
+
+      <button onclick="dislikeMessage(this)">
+        👎
+      </button>
+
+    `;
+
+    wrapper.appendChild(tools);
+
+  } else {
+
+    const tools =
+      document.createElement("div");
+
+    tools.className =
+      "message-tools";
+
+    tools.innerHTML = `
+
+      <button onclick="editMessage(this)">
+        ✏️ Edit
+      </button>
+
+      <button onclick="copyText(this)">
+        📋 Copy
+      </button>
+
+    `;
+
+    wrapper.appendChild(tools);
+
+  }
+
+
+  message.appendChild(avatar);
+
+  message.appendChild(wrapper);
+
+  chat.appendChild(message);
+
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth"
+  });
+
+
+  if (save) {
+
+    const current =
+      getCurrentChat();
+
+    if (current) {
+
+      current.messages.push({
+        role:
+          type === "user"
+            ? "user"
+            : "assistant",
+
+        content:
+          text
+      });
+
+      if (
+        type === "user" &&
+        current.name === "New Chat"
+      ) {
+
+        current.name =
+          text.length > 28
+            ? text.substring(0,28) + "..."
+            : text;
+
+      }
+
+      saveChats();
+
+      renderChatList();
+
+    }
+
+  }
+
+}
+
+
+/* ==========================================
+   ESCAPE HTML
+========================================== */
+
+function escapeHTML(text) {
+
+  return text
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* ==========================================
+   MARKDOWN
+========================================== */
+
+function renderMarkdown(text) {
+
+  if (!text) return "";
+
+  let html =
+    escapeHTML(text);
+
+  html =
+    html.replace(
+      /```([\s\S]*?)```/g,
+      "<pre><code>$1</code></pre>"
+    );
+
+  html =
+    html.replace(
+      /`([^`]+)`/g,
+      "<code>$1</code>"
+    );
+
+  html =
+    html.replace(
+      /\*\*(.*?)\*\*/g,
+      "<strong>$1</strong>"
+    );
+
+  html =
+    html.replace(
+      /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+      "<em>$1</em>"
+    );
+
+  html =
+    html.replace(
+      /^### (.*)$/gm,
+      "<strong>$1</strong>"
+    );
+
+  html =
+    html.replace(
+      /^## (.*)$/gm,
+      "<strong>$1</strong>"
+    );
+
+  html =
+    html.replace(
+      /^# (.*)$/gm,
+      "<strong>$1</strong>"
+    );
+
+  html =
+    html.replace(
+      /(?:^|\n)[-*] (.*)(?=\n|$)/g,
+      "<li>$1</li>"
+    );
+
+  html =
+    html.replace(
+      /(<li>.*<\/li>)/gs,
+      "<ul>$1</ul>"
+    );
+
+  html =
+    html.replace(/\n/g,"<br>");
+
+  return html;
+}
+
+
+/* ==========================================
+   TYPING
+========================================== */
+
+function showTyping() {
+
+  const message =
+    document.createElement("div");
+
+  message.className =
+    "message assistant";
+
+  message.id =
+    "typingMessage";
+
+  const avatar =
+    document.createElement("div");
+
+  avatar.className =
+    "avatar";
+
+  avatar.textContent =
+    "✦";
+
+  const bubble =
+    document.createElement("div");
+
+  bubble.className =
+    "bubble";
+
+  bubble.innerHTML = `
+
+    <div class="typing">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+  `;
+
+  message.appendChild(avatar);
+
+  message.appendChild(bubble);
+
+  chat.appendChild(message);
+
+}
+
+
+/* ==========================================
+   REMOVE TYPING
+========================================== */
+
+function removeTyping() {
+
+  const element =
+    document.getElementById(
+      "typingMessage"
+    );
+
+  if (element) {
+    element.remove();
+  }
+
+}
+
+
+/* ==========================================
+   OFFLINE AI
+========================================== */
+
+function offlineAI(message) {
+
+  const text =
+    message.toLowerCase().trim();
+
+
+  if (
+    text === "hi" ||
+    text === "hello" ||
+    text === "hey"
+  ) {
+
+    return "👋 Hello! I'm Riviz AI offline mode.";
+
+  }
+
+
+  if (
+    text.includes("who are you") ||
+    text.includes("what are you")
+  ) {
+
+    return "🤖 I'm Riviz AI. You are currently using offline browser mode.";
+
+  }
+
+
+  if (text.includes("your name")) {
+
+    return "My name is Riviz AI. ✦";
+
+  }
+
+
+  let match =
+    text.match(
+      /^(-?\d+(?:\.\d+)?)\s*\+\s*(-?\d+(?:\.\d+)?)$/
+    );
+
+  if (match) {
+
+    return `**${
+      Number(match[1]) +
+      Number(match[2])
+    }**`;
+
+  }
+
+
+  match =
+    text.match(
+      /^(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)$/
+    );
+
+  if (match) {
+
+    return `**${
+      Number(match[1]) -
+      Number(match[2])
+    }**`;
+
+  }
+
+
+  match =
+    text.match(
+      /^(-?\d+(?:\.\d+)?)\s*(?:\*|x|×)\s*(-?\d+(?:\.\d+)?)$/
+    );
+
+  if (match) {
+
+    return `**${
+      Number(match[1]) *
+      Number(match[2])
+    }**`;
+
+  }
+
+
+  match =
+    text.match(
+      /^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/
+    );
+
+  if (match) {
+
+    const b =
+      Number(match[2]);
+
+    if (b === 0) {
+      return "❌ Cannot divide by zero.";
+    }
+
+    return `**${
+      Number(match[1]) / b
+    }**`;
+
+  }
+
+
+  match =
+    text.match(
+      /^(-?\d+(?:\.\d+)?)\s*%\s*of\s*(-?\d+(?:\.\d+)?)$/
+    );
+
+  if (match) {
+
+    return `**${
+      Number(match[1]) *
+      Number(match[2]) / 100
+    }**`;
+
+  }
+
+
+  if (text.includes("photosynthesis")) {
+
+    return "🌱 Photosynthesis is the process plants use to make food using sunlight, water and carbon dioxide.";
+
+  }
+
+
+  if (
+    text.includes("artificial intelligence") ||
+    text.includes("what is ai")
+  ) {
+
+    return "🤖 Artificial intelligence is technology that allows computers to perform tasks that normally require human intelligence.";
+
+  }
+
+
+  if (text.includes("gravity")) {
+
+    return "🌍 Gravity is the force that pulls objects toward each other.";
+
+  }
+
+
+  if (text.includes("water")) {
+
+    return "💧 Water is made of hydrogen and oxygen. Its chemical formula is H₂O.";
+
+  }
+
+
+  if (text.includes("capital of india")) {
+
+    return "🇮🇳 The capital of India is New Delhi.";
+
+  }
+
+
+  return "📴 I'm in offline mode. I can handle basic questions and calculations, but advanced questions need Gemini AI.";
+
+}
+
+
+/* ==========================================
+   ONLINE AI
+========================================== */
+
+async function onlineAI(message) {
+
+  const response =
+    await fetch(
+      "/api/chat",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+          message:
+            message
+        })
+      }
+    );
+
+  const data =
+    await response.json();
+
+  if (!response.ok) {
+
+    throw new Error(
+      data.error ||
+      "AI request failed"
+    );
+
+  }
+
+  return (
+    data.answer ||
+    "Sorry, I couldn't generate a response."
+  );
+
+}
+
+
+/* ==========================================
+   SEND
+========================================== */
+
+async function sendMessage() {
+
+  const userMessage =
+    input.value.trim();
+
+  if (!userMessage ||
+      sendBtn.disabled) {
+
+    return;
+  }
+
+
+  const selectedMode =
+    modeSelect.value;
+
+  input.value = "";
+
+  sendBtn.disabled = true;
+
+  addMessage(
+    userMessage,
+    "user"
+  );
+
+  showTyping();
+
+
+  try {
+
+    let answer = "";
+
+
+    if (
+      selectedMode === "offline"
+    ) {
+
+      statusText.textContent =
+        "OFFLINE • Browser AI";
+
+      await delay(250);
+
+      answer =
+        offlineAI(userMessage);
+
+    }
+
+
+    else if (
+      selectedMode === "online"
+    ) {
+
+      statusText.textContent =
+        "ONLINE • Gemini AI";
+
+      answer =
+        await onlineAI(userMessage);
+
+    }
+
+
+    else {
+
+      if (navigator.onLine) {
+
+        try {
+
+          statusText.textContent =
+            "AUTO • Trying online...";
+
+          answer =
+            await onlineAI(
+              userMessage
+            );
+
+          statusText.textContent =
+            "AUTO • Online AI";
+
+        }
+
+        catch(error) {
+
+          console.log(
+            "Online failed:",
+            error
+          );
+
+          statusText.textContent =
+            "AUTO • Offline fallback";
+
+          await delay(250);
+
+          answer =
+            offlineAI(
+              userMessage
+            );
+
+        }
+
+      }
+
+      else {
+
+        statusText.textContent =
+          "AUTO • Offline";
+
+        answer =
+          offlineAI(
+            userMessage
+          );
+
+      }
+
+    }
+
+
+    removeTyping();
+
+    addMessage(
+      answer,
+      "assistant"
+    );
+
+
+  }
+
+  catch(error) {
+
+    removeTyping();
+
+    console.error(error);
+
+    addMessage(
+      "⚠️ Something went wrong. Try AUTO mode.",
+      "assistant"
+    );
+
+    statusText.textContent =
+      "Error";
+
+  }
+
+
+  finally {
+
+    sendBtn.disabled = false;
+
+    input.focus();
+
+  }
+
+}
+
+
+/* ==========================================
+   DELAY
+========================================== */
+
+function delay(ms) {
+
+  return new Promise(
+    resolve =>
+      setTimeout(resolve,ms)
+  );
+
+}
+
+
+/* ==========================================
+   QUICK PROMPT
+========================================== */
+
+function quickPrompt(text) {
+
+  input.value = text;
+
+  sendMessage();
+
+}
+
+
+/* ==========================================
+   CLEAR CHAT
+========================================== */
+
+function clearChat() {
+
+  const current =
+    getCurrentChat();
+
+  if (!current) return;
+
+  current.messages = [];
+
+  saveChats();
+
+  loadCurrentChat();
+
+  statusText.textContent =
+    modeSelect.value.toUpperCase() +
+    " • Ready";
+
+}
+
+
+/* ==========================================
+   COPY
+========================================== */
+
+function copyText(button) {
+
+  const wrapper =
+    button.closest("div").parentElement;
+
+  const bubble =
+    wrapper.querySelector(".bubble");
+
+  if (!bubble) return;
+
+  navigator.clipboard.writeText(
+    bubble.innerText
+  );
+
+  button.textContent =
+    "✓ Copied";
+
+  setTimeout(() => {
+    button.textContent =
+      "📋 Copy";
+  },1200);
+
+}
+
+
+/* ==========================================
+   SPEAK
+========================================== */
+
+function speakText(button) {
+
+  const wrapper =
+    button.closest("div").parentElement;
+
+  const bubble =
+    wrapper.querySelector(".bubble");
+
+  if (!bubble) return;
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+
+    alert(
+      "Speech synthesis is not supported in this browser."
+    );
+
+    return;
+
+  }
+
+  speechSynthesis.cancel();
+
+  const speech =
+    new SpeechSynthesisUtterance(
+      bubble.innerText
+    );
+
+  speech.rate = .95;
+
+  speechSynthesis.speak(
+    speech
+  );
+
+}
+
+
+/* ==========================================
+   VOICE INPUT
+========================================== */
+
+function startVoiceInput() {
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+
+    alert(
+      "Voice input is not supported in this browser."
+    );
+
+    return;
+  }
+
+  const recognition =
+    new SpeechRecognition();
+
+  recognition.lang =
+    "en-IN";
+
+  recognition.interimResults =
+    false;
+
+  statusText.textContent =
+    "🎤 Listening...";
+
+  recognition.start();
+
+  recognition.onresult =
+    event => {
+
+      input.value =
+        event.results[0][0].transcript;
+
+      statusText.textContent =
+        "Voice received";
+
+      input.focus();
+
+    };
+
+  recognition.onerror =
+    () => {
+
+      statusText.textContent =
+        "🎤 Voice error";
+
+    };
+
+}
+
+
+/* ==========================================
+   EDIT MESSAGE
+========================================== */
+
+function editMessage(button) {
+
+  const wrapper =
+    button.closest("div").parentElement;
+
+  const bubble =
+    wrapper.querySelector(".bubble");
+
+  if (!bubble) return;
+
+  input.value =
+    bubble.innerText;
+
+  input.focus();
+
+  const current =
+    getCurrentChat();
+
+  if (current &&
+      current.messages.length) {
+
+    current.messages.pop();
+
+    saveChats();
+
+  }
+
+}
+
+
+/* ==========================================
+   REGENERATE
+========================================== */
+
+async function regenerate() {
+
+  const current =
+    getCurrentChat();
+
+  if (!current ||
+      !current.messages.length) {
+
+    return;
+
+  }
+
+  let lastUser = null;
+
+  for (
+    let i =
+      current.messages.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    if (
+      current.messages[i].role ===
+      "user"
+    ) {
+
+      lastUser =
+        current.messages[i].content;
+
+      break;
+
+    }
+
+  }
+
+  if (!lastUser) return;
+
+  current.messages =
+    current.messages.filter(
+      m =>
+        m.content !== lastUser ||
+        m.role === "user"
+    );
+
+  saveChats();
+
+  loadCurrentChat();
+
+  input.value =
+    lastUser;
+
+  await sendMessage();
+
+}
+
+
+/* ==========================================
+   LIKE / DISLIKE
+========================================== */
+
+function likeMessage(button) {
+
+  button.textContent =
+    "👍 ✓";
+
+}
+
+
+function dislikeMessage(button) {
+
+  button.textContent =
+    "👎 ✓";
+
+}
+
+
+/* ==========================================
+   THEME
+========================================== */
+
+function toggleTheme() {
+
+  document.body.classList.toggle(
+    "light"
+  );
+
+  localStorage.setItem(
+    "riviz_theme",
+    document.body.classList.contains("light")
+      ? "light"
+      : "dark"
+  );
+
+}
+
+
+/* LOAD THEME */
+
+if (
+  localStorage.getItem("riviz_theme")
+  === "light"
+) {
+
+  document.body.classList.add(
+    "light"
+  );
+
+}
+
+
+/* ==========================================
+   TOOLS
+========================================== */
+
+function toggleTools() {
+
+  document
+    .getElementById("tools")
+    .classList.toggle("open");
+
+}
+
+
+/* ==========================================
+   SIDEBAR
+========================================== */
+
+function toggleSidebar() {
+
+  sidebar.classList.toggle("open");
+
+}
+
+
+/* ==========================================
+   CALCULATOR
+========================================== */
+
+function calculate() {
+
+  const value =
+    document
+      .getElementById("calcInput")
+      .value
+      .trim();
+
+  const result =
+    document.getElementById(
+      "calcResult"
+    );
+
+  if (!value) {
+
+    result.textContent =
+      "Enter a calculation.";
+
+    return;
+
+  }
+
+  try {
+
+    if (
+      !/^[0-9+\-*/().%\s×x]+$/i
+        .test(value)
+    ) {
+
+      throw new Error();
+
+    }
+
+    const expression =
+      value
+        .replace(/×/g,"*")
+        .replace(/x/gi,"*");
+
+    const answer =
+      Function(
+        '"use strict"; return (' +
+        expression +
+        ')'
+      )();
+
+    result.textContent =
+      answer;
+
+  }
+
+  catch {
+
+    result.textContent =
+      "Invalid calculation.";
+
+  }
+
+}
+
+
+/* ==========================================
+   TIMER
+========================================== */
+
+function startTimer() {
+
+  stopTimer();
+
+  timerSeconds =
+    Number(
+      document
+        .getElementById(
+          "timerInput"
+        )
+        .value
+    );
+
+  if (
+    !timerSeconds ||
+    timerSeconds < 1
+  ) {
+
+    return;
+
+  }
+
+  updateTimer();
+
+  timer =
+    setInterval(() => {
+
+      timerSeconds--;
+
+      updateTimer();
+
+      if (timerSeconds <= 0) {
+
+        stopTimer();
+
+        document
+          .getElementById(
+            "timerResult"
+          )
+          .textContent =
+          "⏰ Time's up!";
+
+        alert(
+          "⏰ Riviz timer finished!"
+        );
+
+      }
+
+    },1000);
+
+}
+
+
+function updateTimer() {
+
+  document
+    .getElementById(
+      "timerResult"
+    )
+    .textContent =
+    timerSeconds +
+    " seconds";
+
+}
+
+
+function stopTimer() {
+
+  if (timer) {
+
+    clearInterval(timer);
+
+    timer = null;
+
+  }
+
+}
+
+
+/* ==========================================
+   NOTES
+========================================== */
+
+const savedNotes =
+  localStorage.getItem(
+    "riviz_notes"
+  );
+
+if (savedNotes) {
+
+  document.getElementById(
+    "notes"
+  ).value =
+    savedNotes;
+
+}
+
+
+function saveNotes() {
+
+  const notes =
+    document.getElementById(
+      "notes"
+    ).value;
+
+  localStorage.setItem(
+    "riviz_notes",
+    notes
+  );
+
+  document.getElementById(
+    "notesStatus"
+  ).textContent =
+    "✓ Notes saved.";
+
+}
+
+
+/* ==========================================
+   WORD COUNTER
+========================================== */
+
+function countWords() {
+
+  const text =
+    document.getElementById(
+      "wordInput"
+    ).value;
+
+  const words =
+    text.trim()
+      ? text.trim().split(/\s+/).length
+      : 0;
+
+  document.getElementById(
+    "wordResult"
+  ).textContent =
+    words +
+    " words • " +
+    text.length +
+    " characters";
+
+}
+
+
+/* ==========================================
+   UNIT CONVERTER
+========================================== */
+
+function convertUnit() {
+
+  const value =
+    Number(
+      document.getElementById(
+        "unitInput"
+      ).value
+    );
+
+  const type =
+    document.getElementById(
+      "unitType"
+    ).value;
+
+  let result;
+
+  if (type === "km-miles") {
+    result = value * .621371;
+  }
+
+  if (type === "miles-km") {
+    result = value * 1.60934;
+  }
+
+  if (type === "kg-lb") {
+    result = value * 2.20462;
+  }
+
+  if (type === "lb-kg") {
+    result = value * .453592;
+  }
+
+  if (type === "c-f") {
+    result = value * 9 / 5 + 32;
+  }
+
+  if (type === "f-c") {
+    result = (value - 32) * 5 / 9;
+  }
+
+  document.getElementById(
+    "unitResult"
+  ).textContent =
+    Number(result.toFixed(4));
+
+}
+
+
+/* ==========================================
+   PASSWORD GENERATOR
+========================================== */
+
+function generatePassword() {
+
+  let length =
+    Number(
+      document.getElementById(
+        "passwordLength"
+      ).value
+    );
+
+  length =
+    Math.max(
+      4,
+      Math.min(64,length)
+    );
+
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+    "abcdefghijklmnopqrstuvwxyz" +
+    "0123456789" +
+    "!@#$%^&*()_+-=";
+
+  let password = "";
+
+  const random =
+    new Uint32Array(length);
+
+  crypto.getRandomValues(
+    random
+  );
+
+  for (
+    let i = 0;
+    i < length;
+    i++
+  ) {
+
+    password +=
+      chars[
+        random[i] %
+        chars.length
+      ];
+
+  }
+
+  document.getElementById(
+    "passwordResult"
+  ).textContent =
+    password;
+
+}
+
+
+/* ==========================================
+   EXPORT CHAT
+========================================== */
+
+function exportChat() {
+
+  const current =
+    getCurrentChat();
+
+  if (!current) return;
+
+  let text =
+    "Riviz AI Chat\n\n";
+
+  current.messages.forEach(
+    message => {
+
+      text +=
+        message.role.toUpperCase() +
+        ":\n" +
+        message.content +
+        "\n\n";
+
+    }
+  );
+
+  const blob =
+    new Blob(
+      [text],
+      {
+        type:
+          "text/plain"
+      }
+    );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const a =
+    document.createElement("a");
+
+  a.href = url;
+
+  a.download =
+    "riviz-chat.txt";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+}
+
+
+/* ==========================================
+   KEYBOARD SHORTCUTS
+========================================== */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    /* Ctrl + K */
+
+    if (
+      event.ctrlKey &&
+      event.key.toLowerCase() === "k"
+    ) {
+
+      event.preventDefault();
+
+      input.focus();
+
+    }
+
+
+    /* Ctrl + Shift + N */
+
+    if (
+      event.ctrlKey &&
+      event.shiftKey &&
+      event.key.toLowerCase() === "n"
+    ) {
+
+      event.preventDefault();
+
+      newChat();
+
+    }
+
+
+    /* Escape */
+
+    if (
+      event.key === "Escape"
+    ) {
+
+      document
+        .getElementById("tools")
+        .classList.remove("open");
+
+      sidebar.classList.remove(
+        "open"
+      );
+
+    }
+
+  }
+);
+
+
+/* ==========================================
+   ENTER TO SEND
+========================================== */
+
+input.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+
+/* ==========================================
+   MODE
+========================================== */
 
 modeSelect.addEventListener(
   "change",
   () => {
 
-    const mode = modeSelect.value;
+    const mode =
+      modeSelect.value;
 
     if (mode === "online") {
 
@@ -1011,47 +2766,31 @@ modeSelect.addEventListener(
     else {
 
       statusText.textContent =
-        "AUTO • Online + Offline fallback";
+        navigator.onLine
+          ? "AUTO • Online + Offline fallback"
+          : "AUTO • Offline";
+
     }
 
   }
 );
 
 
-/* =========================
-   ENTER KEY
-========================= */
-
-input.addEventListener(
-  "keydown",
-  event => {
-
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey
-    ) {
-
-      event.preventDefault();
-
-      sendMessage();
-    }
-
-  }
-);
-
-
-/* =========================
+/* ==========================================
    INTERNET STATUS
-========================= */
+========================================== */
 
 window.addEventListener(
   "online",
   () => {
 
-    if (modeSelect.value === "auto") {
+    if (
+      modeSelect.value === "auto"
+    ) {
 
       statusText.textContent =
         "AUTO • Internet connected";
+
     }
 
   }
@@ -1062,14 +2801,46 @@ window.addEventListener(
   "offline",
   () => {
 
-    if (modeSelect.value === "auto") {
-
-      statusText.textContent =
-        "AUTO • Offline";
-    }
+    statusText.textContent =
+      "📴 Internet disconnected";
 
   }
 );
+
+
+/* ==========================================
+   QUICK TOOL: EXPORT BUTTON
+   Triple-click logo to export
+========================================== */
+
+let logoClicks = 0;
+
+document
+  .querySelector(".logo-icon")
+  .addEventListener(
+    "click",
+    () => {
+
+      logoClicks++;
+
+      if (logoClicks >= 3) {
+
+        exportChat();
+
+        logoClicks = 0;
+
+      }
+
+      setTimeout(
+        () => {
+          logoClicks = 0;
+        },
+        1000
+      );
+
+    }
+  );
+
 
 </script>
 
