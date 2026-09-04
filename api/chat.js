@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "GEMINI_API_KEY is not configured"
+        error: "GEMINI_API_KEY is missing in Vercel"
       });
     }
 
@@ -47,11 +47,16 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
+    // Show the REAL Gemini error
     if (!response.ok) {
       console.error("Gemini API error:", data);
 
-      return res.status(response.status).json({
-        error: data?.error?.message || "Gemini API request failed"
+      return res.status(200).json({
+        answer:
+          "⚠️ Gemini Error " +
+          response.status +
+          ": " +
+          (data?.error?.message || "Unknown Gemini error")
       });
     }
 
@@ -62,8 +67,8 @@ export default async function handler(req, res) {
         .trim();
 
     if (!answer) {
-      return res.status(500).json({
-        error: "Gemini returned an empty response"
+      return res.status(200).json({
+        answer: "⚠️ Gemini returned no answer."
       });
     }
 
@@ -74,8 +79,8 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Server error:", error);
 
-    return res.status(500).json({
-      error: "Server error"
+    return res.status(200).json({
+      answer: "⚠️ Server error: " + (error.message || "Unknown error")
     });
   }
 }
