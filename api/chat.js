@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "GEMINI_API_KEY is not configured in Vercel"
+        error: "GEMINI_API_KEY is not configured"
       });
     }
 
@@ -51,9 +51,7 @@ export default async function handler(req, res) {
       console.error("Gemini API error:", data);
 
       return res.status(response.status).json({
-        error:
-          data?.error?.message ||
-          "Gemini API request failed"
+        error: data?.error?.message || "Gemini API request failed"
       });
     }
 
