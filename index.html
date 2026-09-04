@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Riviz AI</title>
 
   <style>
@@ -13,29 +13,29 @@
     }
 
     body {
-      font-family: Arial, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
       background:
-        radial-gradient(circle at top, #202a4a 0%, #0b0d14 45%, #05060a 100%);
+        radial-gradient(circle at top left, #263b73 0%, transparent 35%),
+        radial-gradient(circle at bottom right, #4b1f68 0%, transparent 35%),
+        #080b14;
       color: white;
       min-height: 100vh;
-    }
-
-    .app {
-      width: 100%;
-      height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
     header {
       height: 70px;
+      padding: 0 22px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 22px;
-      border-bottom: 1px solid #252936;
-      background: rgba(8, 10, 18, 0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(8,11,20,0.75);
       backdrop-filter: blur(15px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .logo {
@@ -53,8 +53,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #6c63ff, #00d4ff);
-      font-size: 20px;
+      background: linear-gradient(135deg, #7c5cff, #00d4ff);
+      box-shadow: 0 0 25px rgba(0,212,255,0.25);
     }
 
     .controls {
@@ -65,70 +65,88 @@
 
     select,
     button {
-      border: 1px solid #303544;
-      background: #151925;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.07);
       color: white;
       border-radius: 10px;
-      padding: 9px 13px;
+      padding: 9px 12px;
       cursor: pointer;
     }
 
-    select:hover,
-    button:hover {
-      background: #202536;
+    select option {
+      background: #111522;
+      color: white;
     }
 
-    .chat {
+    button:hover,
+    select:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    main {
+      width: 100%;
+      max-width: 950px;
+      margin: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 25px 18px;
+    }
+
+    #chat {
       flex: 1;
       overflow-y: auto;
-      padding: 30px 15px 120px;
+      padding: 15px 5px 130px;
     }
 
     .welcome {
-      max-width: 750px;
-      margin: 70px auto 30px;
+      min-height: 65vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
     }
 
     .welcome h1 {
-      font-size: 42px;
-      margin-bottom: 12px;
-      background: linear-gradient(90deg, #ffffff, #8fdcff);
+      font-size: clamp(38px, 8vw, 70px);
+      background: linear-gradient(90deg, #ffffff, #9edcff, #b99cff);
       -webkit-background-clip: text;
       color: transparent;
+      margin-bottom: 12px;
     }
 
     .welcome p {
-      color: #a9afc1;
+      color: #aeb6ca;
       font-size: 17px;
+      max-width: 600px;
     }
 
     .suggestions {
-      max-width: 750px;
-      margin: 30px auto;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 28px;
     }
 
     .suggestion {
-      padding: 17px;
-      text-align: left;
-      border: 1px solid #292e3c;
-      background: rgba(20, 23, 34, 0.8);
-      border-radius: 15px;
-      color: #dce1ef;
+      padding: 12px 15px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      color: #dce2f0;
     }
 
     .suggestion:hover {
-      border-color: #5964ff;
-      transform: translateY(-2px);
+      background: rgba(124,92,255,0.18);
     }
 
     .message {
-      max-width: 850px;
-      margin: 15px auto;
       display: flex;
+      margin: 18px 0;
+      width: 100%;
     }
 
     .message.user {
@@ -136,54 +154,94 @@
     }
 
     .bubble {
-      max-width: 75%;
+      max-width: 78%;
       padding: 13px 16px;
       border-radius: 17px;
-      line-height: 1.5;
-      white-space: pre-wrap;
+      line-height: 1.55;
+      word-wrap: break-word;
+      white-space: normal;
     }
 
     .user .bubble {
-      background: linear-gradient(135deg, #5d62ff, #7258ff);
+      background: linear-gradient(135deg, #6651db, #5140b7);
       border-bottom-right-radius: 5px;
     }
 
-    .ai .bubble {
-      background: #171b27;
-      border: 1px solid #292e3b;
+    .assistant .bubble {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.08);
       border-bottom-left-radius: 5px;
+      color: #edf1fa;
+    }
+
+    /* Markdown formatting */
+    .bubble strong {
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .bubble em {
+      font-style: italic;
+    }
+
+    .bubble code {
+      background: rgba(0,0,0,0.35);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+
+    .bubble pre {
+      background: #05070d;
+      padding: 14px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+
+    .bubble pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .bubble ul,
+    .bubble ol {
+      padding-left: 24px;
+      margin: 8px 0;
+    }
+
+    .bubble li {
+      margin: 4px 0;
     }
 
     .typing {
       display: inline-flex;
       gap: 5px;
-      align-items: center;
+      padding: 5px;
     }
 
-    .dot {
+    .typing span {
       width: 7px;
       height: 7px;
+      background: #aeb6ca;
       border-radius: 50%;
-      background: #aab2c8;
-      animation: bounce 1s infinite;
+      animation: bounce 1.2s infinite;
     }
 
-    .dot:nth-child(2) {
+    .typing span:nth-child(2) {
       animation-delay: .15s;
     }
 
-    .dot:nth-child(3) {
+    .typing span:nth-child(3) {
       animation-delay: .3s;
     }
 
     @keyframes bounce {
-      0%, 80%, 100% {
+      0%, 60%, 100% {
         transform: translateY(0);
-        opacity: .4;
       }
-      40% {
+      30% {
         transform: translateY(-5px);
-        opacity: 1;
       }
     }
 
@@ -192,54 +250,60 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 15px;
-      background: linear-gradient(transparent, #080a10 35%);
+      padding: 15px 18px 20px;
+      background: linear-gradient(
+        transparent,
+        rgba(8,11,20,0.96) 30%
+      );
+      z-index: 5;
     }
 
     .input-box {
-      max-width: 850px;
+      max-width: 900px;
       margin: auto;
       display: flex;
+      align-items: center;
       gap: 10px;
-      padding: 8px;
-      border: 1px solid #303545;
-      background: #11141e;
+      background: rgba(20,24,38,0.95);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 17px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.35);
+      padding: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     }
 
-    textarea {
+    #messageInput {
       flex: 1;
-      resize: none;
+      background: transparent;
       border: none;
       outline: none;
-      background: transparent;
       color: white;
-      font-size: 15px;
-      padding: 11px;
-      min-height: 45px;
-      max-height: 120px;
+      font-size: 16px;
+      padding: 12px;
     }
 
-    textarea::placeholder {
-      color: #747b8e;
+    #messageInput::placeholder {
+      color: #7f879b;
     }
 
-    #send {
-      width: 48px;
-      height: 48px;
-      padding: 0;
-      font-size: 20px;
-      background: linear-gradient(135deg, #625cff, #00aeea);
+    #sendBtn {
+      width: 45px;
+      height: 45px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #735cff, #00bfff);
       border: none;
+      font-size: 18px;
+    }
+
+    #sendBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .status {
-      max-width: 850px;
-      margin: 5px auto;
       text-align: center;
-      color: #727a90;
+      color: #737c92;
       font-size: 12px;
+      margin-top: 7px;
     }
 
     @media (max-width: 600px) {
@@ -251,38 +315,39 @@
         font-size: 18px;
       }
 
-      .controls {
-        gap: 5px;
+      .logo-icon {
+        width: 34px;
+        height: 34px;
       }
 
-      .controls select,
       .controls button {
-        padding: 7px 8px;
-        font-size: 12px;
+        display: none;
       }
 
-      .welcome {
-        margin-top: 40px;
+      select {
+        padding: 8px;
       }
 
-      .welcome h1 {
-        font-size: 32px;
-      }
-
-      .suggestions {
-        grid-template-columns: 1fr;
+      main {
+        padding: 10px 10px;
       }
 
       .bubble {
-        max-width: 88%;
+        max-width: 90%;
+      }
+
+      .welcome h1 {
+        font-size: 46px;
+      }
+
+      .suggestions {
+        padding: 0 5px;
       }
     }
   </style>
 </head>
 
 <body>
-
-<div class="app">
 
   <header>
     <div class="logo">
@@ -301,243 +366,328 @@
     </div>
   </header>
 
-  <main class="chat" id="chat">
+  <main>
+    <div id="chat">
 
-    <div class="welcome" id="welcome">
-      <h1>How can I help you?</h1>
-      <p>Your intelligent AI assistant</p>
+      <div class="welcome" id="welcome">
+        <h1>Riviz AI</h1>
+        <p>Your smart AI assistant. Ask anything and let Riviz help you.</p>
 
-      <div class="suggestions">
-        <button class="suggestion"
-          onclick="useSuggestion('Explain photosynthesis in simple words')">
-          🌱 Explain photosynthesis
-        </button>
+        <div class="suggestions">
+          <div class="suggestion" onclick="useSuggestion('Explain photosynthesis simply')">
+            🌱 Explain photosynthesis
+          </div>
 
-        <button class="suggestion"
-          onclick="useSuggestion('Give me 5 interesting science facts')">
-          🔬 Science facts
-        </button>
+          <div class="suggestion" onclick="useSuggestion('Tell me a funny joke')">
+            😂 Tell me a joke
+          </div>
 
-        <button class="suggestion"
-          onclick="useSuggestion('Help me write a Python program')">
-          💻 Help with coding
-        </button>
+          <div class="suggestion" onclick="useSuggestion('Give me a cool science fact')">
+            🔬 Science fact
+          </div>
 
-        <button class="suggestion"
-          onclick="useSuggestion('Give me a creative project idea')">
-          💡 Project ideas
-        </button>
+          <div class="suggestion" onclick="useSuggestion('What is artificial intelligence?')">
+            🤖 What is AI?
+          </div>
+        </div>
       </div>
-    </div>
 
+    </div>
   </main>
 
   <div class="input-area">
-    <div class="status" id="status">Riviz AI is ready</div>
-
     <div class="input-box">
-      <textarea
-        id="message"
+      <input
+        id="messageInput"
+        type="text"
         placeholder="Message Riviz AI..."
-        rows="1"
-      ></textarea>
+        autocomplete="off"
+      />
 
-      <button id="send" onclick="sendMessage()">➤</button>
+      <button id="sendBtn" onclick="sendMessage()">➤</button>
+    </div>
+
+    <div class="status" id="status">
+      AUTO mode
     </div>
   </div>
 
-</div>
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const statusText = document.getElementById("status");
+    const modeSelect = document.getElementById("mode");
+    const welcome = document.getElementById("welcome");
 
-<script>
+    let conversation = [];
 
-const chat = document.getElementById("chat");
-const input = document.getElementById("message");
-const sendButton = document.getElementById("send");
-const statusText = document.getElementById("status");
+    /*
+      Converts Gemini Markdown into safe HTML.
 
-let messages = [];
+      Most importantly:
+      **text** -> <strong>text</strong>
 
-function addMessage(type, text) {
+      This fixes the problem where Riviz was showing:
+      **4**
 
-  const message = document.createElement("div");
-  message.className = "message " + type;
+      instead of:
+      4 in bold.
+    */
+    function renderMarkdown(text) {
+      if (!text) return "";
 
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-  bubble.textContent = text;
+      // Escape HTML first for safety
+      let html = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 
-  message.appendChild(bubble);
-  chat.appendChild(message);
+      // Code blocks
+      html = html.replace(
+        /```([\s\S]*?)```/g,
+        '<pre><code>$1</code></pre>'
+      );
 
-  chat.scrollTop = chat.scrollHeight;
-}
+      // Inline code
+      html = html.replace(
+        /`([^`]+)`/g,
+        "<code>$1</code>"
+      );
 
-function showTyping() {
+      // Bold
+      html = html.replace(
+        /\*\*(.*?)\*\*/g,
+        "<strong>$1</strong>"
+      );
 
-  const message = document.createElement("div");
-  message.className = "message ai";
-  message.id = "typing";
+      // Italic
+      html = html.replace(
+        /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+        "<em>$1</em>"
+      );
 
-  message.innerHTML = `
-    <div class="bubble">
-      <div class="typing">
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-      </div>
-    </div>
-  `;
+      // Headings
+      html = html.replace(
+        /^### (.*)$/gm,
+        "<strong>$1</strong>"
+      );
 
-  chat.appendChild(message);
-  chat.scrollTop = chat.scrollHeight;
-}
+      html = html.replace(
+        /^## (.*)$/gm,
+        "<strong>$1</strong>"
+      );
 
-function removeTyping() {
+      html = html.replace(
+        /^# (.*)$/gm,
+        "<strong>$1</strong>"
+      );
 
-  const typing = document.getElementById("typing");
+      // Unordered lists
+      html = html.replace(
+        /(?:^|\n)[-*] (.*)(?=\n|$)/g,
+        "<li>$1</li>"
+      );
 
-  if (typing) {
-    typing.remove();
-  }
-}
+      html = html.replace(
+        /(<li>.*<\/li>)/gs,
+        "<ul>$1</ul>"
+      );
 
-async function sendMessage() {
+      // Numbered lists
+      html = html.replace(
+        /(?:^|\n)\d+\. (.*)(?=\n|$)/g,
+        "<li>$1</li>"
+      );
 
-  const userMessage = input.value.trim();
+      // Line breaks
+      html = html.replace(/\n/g, "<br>");
 
-  if (!userMessage) return;
-
-  document.getElementById("welcome")?.remove();
-
-  addMessage("user", userMessage);
-
-  messages.push({
-    role: "user",
-    content: userMessage
-  });
-
-  input.value = "";
-
-  sendButton.disabled = true;
-  statusText.textContent = "Riviz AI is thinking...";
-
-  showTyping();
-
-  try {
-
-    const response = await fetch("/api/chat", {
-
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({
-        message: userMessage
-      })
-
-    });
-
-    const data = await response.json();
-
-    removeTyping();
-
-    if (!response.ok) {
-      throw new Error(data.error || "AI request failed");
+      return html;
     }
 
-    const answer = data.answer || "I couldn't generate a response.";
+    function addMessage(text, type) {
+      if (welcome) {
+        welcome.style.display = "none";
+      }
 
-    addMessage("ai", answer);
+      const message = document.createElement("div");
+      message.className = "message " + type;
 
-    messages.push({
-      role: "assistant",
-      content: answer
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+
+      if (type === "assistant") {
+        bubble.innerHTML = renderMarkdown(text);
+      } else {
+        // User messages stay plain text
+        bubble.textContent = text;
+      }
+
+      message.appendChild(bubble);
+      chat.appendChild(message);
+
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+      });
+
+      return message;
+    }
+
+    function showTyping() {
+      const message = document.createElement("div");
+      message.className = "message assistant";
+      message.id = "typingMessage";
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+
+      bubble.innerHTML = `
+        <div class="typing">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      `;
+
+      message.appendChild(bubble);
+      chat.appendChild(message);
+
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+
+    function removeTyping() {
+      const typing = document.getElementById("typingMessage");
+
+      if (typing) {
+        typing.remove();
+      }
+    }
+
+    async function sendMessage() {
+      const userMessage = input.value.trim();
+
+      if (!userMessage) return;
+
+      input.value = "";
+      sendBtn.disabled = true;
+
+      addMessage(userMessage, "user");
+
+      conversation.push({
+        role: "user",
+        content: userMessage
+      });
+
+      showTyping();
+
+      statusText.textContent = "Riviz is thinking...";
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: userMessage
+          })
+        });
+
+        const data = await response.json();
+
+        removeTyping();
+
+        if (!response.ok) {
+          throw new Error(data.error || "AI request failed");
+        }
+
+        const answer =
+          data.answer ||
+          "Sorry, I couldn't generate a response.";
+
+        addMessage(answer, "assistant");
+
+        conversation.push({
+          role: "assistant",
+          content: answer
+        });
+
+        statusText.textContent =
+          modeSelect.value.toUpperCase() + " mode";
+
+      } catch (error) {
+        removeTyping();
+
+        console.error(error);
+
+        addMessage(
+          "⚠️ Sorry, I couldn't connect to the AI server.",
+          "assistant"
+        );
+
+        statusText.textContent = "Connection error";
+
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    function useSuggestion(text) {
+      input.value = text;
+      input.focus();
+      sendMessage();
+    }
+
+    function clearChat() {
+      conversation = [];
+
+      chat.innerHTML = `
+        <div class="welcome" id="welcome">
+          <h1>Riviz AI</h1>
+          <p>Your smart AI assistant. Ask anything and let Riviz help you.</p>
+
+          <div class="suggestions">
+            <div class="suggestion" onclick="useSuggestion('Explain photosynthesis simply')">
+              🌱 Explain photosynthesis
+            </div>
+
+            <div class="suggestion" onclick="useSuggestion('Tell me a funny joke')">
+              😂 Tell me a joke
+            </div>
+
+            <div class="suggestion" onclick="useSuggestion('Give me a cool science fact')">
+              🔬 Science fact
+            </div>
+
+            <div class="suggestion" onclick="useSuggestion('What is artificial intelligence?')">
+              🤖 What is AI?
+            </div>
+          </div>
+        </div>
+      `;
+
+      statusText.textContent =
+        modeSelect.value.toUpperCase() + " mode";
+    }
+
+    modeSelect.addEventListener("change", () => {
+      statusText.textContent =
+        modeSelect.value.toUpperCase() + " mode";
     });
 
-    statusText.textContent = "Riviz AI is ready";
-
-  } catch (error) {
-
-    removeTyping();
-
-    addMessage(
-      "ai",
-      "⚠️ Sorry, I couldn't connect to the AI server."
-    );
-
-    statusText.textContent = "Connection error";
-
-    console.error(error);
-
-  } finally {
-
-    sendButton.disabled = false;
-    input.focus();
-
-  }
-}
-
-function useSuggestion(text) {
-
-  input.value = text;
-  input.focus();
-
-}
-
-function clearChat() {
-
-  messages = [];
-
-  chat.innerHTML = `
-    <div class="welcome" id="welcome">
-      <h1>How can I help you?</h1>
-      <p>Your intelligent AI assistant</p>
-
-      <div class="suggestions">
-
-        <button class="suggestion"
-          onclick="useSuggestion('Explain photosynthesis in simple words')">
-          🌱 Explain photosynthesis
-        </button>
-
-        <button class="suggestion"
-          onclick="useSuggestion('Give me 5 interesting science facts')">
-          🔬 Science facts
-        </button>
-
-        <button class="suggestion"
-          onclick="useSuggestion('Help me write a Python program')">
-          💻 Help with coding
-        </button>
-
-        <button class="suggestion"
-          onclick="useSuggestion('Give me a creative project idea')">
-          💡 Project ideas
-        </button>
-
-      </div>
-    </div>
-  `;
-
-  statusText.textContent = "Riviz AI is ready";
-
-}
-
-input.addEventListener("keydown", function(event) {
-
-  if (event.key === "Enter" && !event.shiftKey) {
-
-    event.preventDefault();
-
-    sendMessage();
-
-  }
-
-});
-
-</script>
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
 
 </body>
 </html>
