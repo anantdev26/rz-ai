@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
     if (!message || typeof message !== "string") {
       return res.status(400).json({
-        error: "Message is required"
+        error: "Please enter a message."
       });
     }
 
@@ -18,12 +18,12 @@ export default async function handler(req, res) {
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "GEMINI_API_KEY is missing in Vercel"
+        error: "GEMINI_API_KEY is missing."
       });
     }
 
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent",
       {
         method: "POST",
         headers: {
@@ -31,6 +31,17 @@ export default async function handler(req, res) {
           "x-goog-api-key": apiKey
         },
         body: JSON.stringify({
+          systemInstruction: {
+            parts: [
+              {
+                text:
+                  "You are Riviz AI, a helpful, friendly and intelligent AI assistant. " +
+                  "Answer clearly and accurately. " +
+                  "For mathematics, calculate carefully. " +
+                  "Use simple language when possible."
+              }
+            ]
+          },
           contents: [
             {
               role: "user",
@@ -40,14 +51,17 @@ export default async function handler(req, res) {
                 }
               ]
             }
-          ]
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1000
+          }
         })
       }
     );
 
     const data = await response.json();
 
-    // Show the REAL Gemini error
     if (!response.ok) {
       console.error("Gemini API error:", data);
 
@@ -56,7 +70,7 @@ export default async function handler(req, res) {
           "⚠️ Gemini Error " +
           response.status +
           ": " +
-          (data?.error?.message || "Unknown Gemini error")
+          (data?.error?.message || "Unknown error")
       });
     }
 
@@ -68,7 +82,7 @@ export default async function handler(req, res) {
 
     if (!answer) {
       return res.status(200).json({
-        answer: "⚠️ Gemini returned no answer."
+        answer: "⚠️ Gemini returned an empty response."
       });
     }
 
@@ -80,7 +94,9 @@ export default async function handler(req, res) {
     console.error("Server error:", error);
 
     return res.status(200).json({
-      answer: "⚠️ Server error: " + (error.message || "Unknown error")
+      answer:
+        "⚠️ Server error: " +
+        (error?.message || "Unknown error")
     });
   }
 }
