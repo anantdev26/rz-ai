@@ -20,8 +20,6 @@
         #080b14;
       color: white;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
     header {
@@ -31,7 +29,7 @@
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.08);
-      background: rgba(8,11,20,0.75);
+      background: rgba(8,11,20,0.8);
       backdrop-filter: blur(15px);
       position: sticky;
       top: 0;
@@ -87,15 +85,11 @@
       width: 100%;
       max-width: 950px;
       margin: auto;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+      min-height: calc(100vh - 70px);
       padding: 25px 18px;
     }
 
     #chat {
-      flex: 1;
-      overflow-y: auto;
       padding: 15px 5px 130px;
     }
 
@@ -110,7 +104,7 @@
 
     .welcome h1 {
       font-size: clamp(38px, 8vw, 70px);
-      background: linear-gradient(90deg, #ffffff, #9edcff, #b99cff);
+      background: linear-gradient(90deg, #fff, #9edcff, #b99cff);
       -webkit-background-clip: text;
       color: transparent;
       margin-bottom: 12px;
@@ -159,7 +153,6 @@
       border-radius: 17px;
       line-height: 1.55;
       word-wrap: break-word;
-      white-space: normal;
     }
 
     .user .bubble {
@@ -174,14 +167,8 @@
       color: #edf1fa;
     }
 
-    /* Markdown formatting */
     .bubble strong {
-      font-weight: 700;
-      color: #ffffff;
-    }
-
-    .bubble em {
-      font-style: italic;
+      color: white;
     }
 
     .bubble code {
@@ -210,10 +197,6 @@
       margin: 8px 0;
     }
 
-    .bubble li {
-      margin: 4px 0;
-    }
-
     .typing {
       display: inline-flex;
       gap: 5px;
@@ -240,6 +223,7 @@
       0%, 60%, 100% {
         transform: translateY(0);
       }
+
       30% {
         transform: translateY(-5px);
       }
@@ -268,7 +252,6 @@
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 17px;
       padding: 8px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     }
 
     #messageInput {
@@ -315,11 +298,6 @@
         font-size: 18px;
       }
 
-      .logo-icon {
-        width: 34px;
-        height: 34px;
-      }
-
       .controls button {
         display: none;
       }
@@ -329,7 +307,7 @@
       }
 
       main {
-        padding: 10px 10px;
+        padding: 10px;
       }
 
       .bubble {
@@ -339,355 +317,761 @@
       .welcome h1 {
         font-size: 46px;
       }
-
-      .suggestions {
-        padding: 0 5px;
-      }
     }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <div class="logo">
-      <div class="logo-icon">✦</div>
-      Riviz AI
-    </div>
+<header>
+  <div class="logo">
+    <div class="logo-icon">✦</div>
+    Riviz AI
+  </div>
 
-    <div class="controls">
-      <select id="mode">
-        <option value="auto">AUTO</option>
-        <option value="online">ONLINE</option>
-        <option value="offline">OFFLINE</option>
-      </select>
+  <div class="controls">
+    <select id="mode">
+      <option value="auto">AUTO</option>
+      <option value="online">ONLINE</option>
+      <option value="offline">OFFLINE</option>
+    </select>
 
-      <button onclick="clearChat()">Clear</button>
-    </div>
-  </header>
+    <button onclick="clearChat()">Clear</button>
+  </div>
+</header>
 
-  <main>
-    <div id="chat">
+<main>
+  <div id="chat">
 
-      <div class="welcome" id="welcome">
-        <h1>Riviz AI</h1>
-        <p>Your smart AI assistant. Ask anything and let Riviz help you.</p>
+    <div class="welcome" id="welcome">
+      <h1>Riviz AI</h1>
 
-        <div class="suggestions">
-          <div class="suggestion" onclick="useSuggestion('Explain photosynthesis simply')">
-            🌱 Explain photosynthesis
-          </div>
+      <p>
+        Your smart AI assistant. Online, offline, or automatic.
+      </p>
 
-          <div class="suggestion" onclick="useSuggestion('Tell me a funny joke')">
-            😂 Tell me a joke
-          </div>
+      <div class="suggestions">
 
-          <div class="suggestion" onclick="useSuggestion('Give me a cool science fact')">
-            🔬 Science fact
-          </div>
-
-          <div class="suggestion" onclick="useSuggestion('What is artificial intelligence?')">
-            🤖 What is AI?
-          </div>
+        <div class="suggestion"
+          onclick="useSuggestion('Explain photosynthesis simply')">
+          🌱 Explain photosynthesis
         </div>
+
+        <div class="suggestion"
+          onclick="useSuggestion('Tell me a funny joke')">
+          😂 Tell me a joke
+        </div>
+
+        <div class="suggestion"
+          onclick="useSuggestion('Give me a cool science fact')">
+          🔬 Science fact
+        </div>
+
+        <div class="suggestion"
+          onclick="useSuggestion('What is artificial intelligence?')">
+          🤖 What is AI?
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="input-area">
+
+  <div class="input-box">
+
+    <input
+      id="messageInput"
+      type="text"
+      placeholder="Message Riviz AI..."
+      autocomplete="off"
+    />
+
+    <button id="sendBtn" onclick="sendMessage()">➤</button>
+
+  </div>
+
+  <div class="status" id="status">
+    AUTO mode
+  </div>
+
+</div>
+
+<script>
+
+const chat = document.getElementById("chat");
+const input = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+const statusText = document.getElementById("status");
+const modeSelect = document.getElementById("mode");
+
+let conversation = [];
+
+
+/* =========================
+   MARKDOWN
+========================= */
+
+function renderMarkdown(text) {
+
+  if (!text) return "";
+
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  html = html.replace(
+    /```([\s\S]*?)```/g,
+    "<pre><code>$1</code></pre>"
+  );
+
+  html = html.replace(
+    /`([^`]+)`/g,
+    "<code>$1</code>"
+  );
+
+  html = html.replace(
+    /\*\*(.*?)\*\*/g,
+    "<strong>$1</strong>"
+  );
+
+  html = html.replace(
+    /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+    "<em>$1</em>"
+  );
+
+  html = html.replace(
+    /^### (.*)$/gm,
+    "<strong>$1</strong>"
+  );
+
+  html = html.replace(
+    /^## (.*)$/gm,
+    "<strong>$1</strong>"
+  );
+
+  html = html.replace(
+    /^# (.*)$/gm,
+    "<strong>$1</strong>"
+  );
+
+  html = html.replace(
+    /(?:^|\n)[-*] (.*)(?=\n|$)/g,
+    "<li>$1</li>"
+  );
+
+  html = html.replace(
+    /(<li>.*<\/li>)/gs,
+    "<ul>$1</ul>"
+  );
+
+  html = html.replace(/\n/g, "<br>");
+
+  return html;
+}
+
+
+/* =========================
+   ADD MESSAGE
+========================= */
+
+function addMessage(text, type) {
+
+  const welcome = document.getElementById("welcome");
+
+  if (welcome) {
+    welcome.style.display = "none";
+  }
+
+  const message = document.createElement("div");
+
+  message.className = "message " + type;
+
+  const bubble = document.createElement("div");
+
+  bubble.className = "bubble";
+
+  if (type === "assistant") {
+    bubble.innerHTML = renderMarkdown(text);
+  } else {
+    bubble.textContent = text;
+  }
+
+  message.appendChild(bubble);
+
+  chat.appendChild(message);
+
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth"
+  });
+}
+
+
+/* =========================
+   TYPING
+========================= */
+
+function showTyping() {
+
+  const message = document.createElement("div");
+
+  message.className = "message assistant";
+
+  message.id = "typingMessage";
+
+  const bubble = document.createElement("div");
+
+  bubble.className = "bubble";
+
+  bubble.innerHTML = `
+    <div class="typing">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  `;
+
+  message.appendChild(bubble);
+
+  chat.appendChild(message);
+}
+
+
+function removeTyping() {
+
+  const typing =
+    document.getElementById("typingMessage");
+
+  if (typing) {
+    typing.remove();
+  }
+}
+
+
+/* =========================
+   OFFLINE AI
+========================= */
+
+function offlineAI(message) {
+
+  const text = message.toLowerCase().trim();
+
+
+  /* Greetings */
+
+  if (
+    text === "hi" ||
+    text === "hello" ||
+    text === "hey" ||
+    text.includes("good morning") ||
+    text.includes("good evening")
+  ) {
+
+    return "👋 Hello! I'm Riviz AI's offline mode. I can still help with simple questions, calculations and some basic knowledge.";
+  }
+
+
+  /* Who are you */
+
+  if (
+    text.includes("who are you") ||
+    text.includes("what are you")
+  ) {
+
+    return "🤖 I'm Riviz AI. You are currently using my offline browser mode.";
+  }
+
+
+  /* Name */
+
+  if (
+    text.includes("your name")
+  ) {
+
+    return "My name is Riviz AI. ✦";
+  }
+
+
+  /* Addition */
+
+  let match = text.match(
+    /^(-?\d+(?:\.\d+)?)\s*\+\s*(-?\d+(?:\.\d+)?)$/
+  );
+
+  if (match) {
+
+    const a = Number(match[1]);
+    const b = Number(match[2]);
+
+    return `**${a + b}**`;
+  }
+
+
+  /* Subtraction */
+
+  match = text.match(
+    /^(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)$/
+  );
+
+  if (match) {
+
+    const a = Number(match[1]);
+    const b = Number(match[2]);
+
+    return `**${a - b}**`;
+  }
+
+
+  /* Multiplication */
+
+  match = text.match(
+    /^(-?\d+(?:\.\d+)?)\s*(?:\*|x|×)\s*(-?\d+(?:\.\d+)?)$/
+  );
+
+  if (match) {
+
+    const a = Number(match[1]);
+    const b = Number(match[2]);
+
+    return `**${a * b}**`;
+  }
+
+
+  /* Division */
+
+  match = text.match(
+    /^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/
+  );
+
+  if (match) {
+
+    const a = Number(match[1]);
+    const b = Number(match[2]);
+
+    if (b === 0) {
+      return "❌ You cannot divide by zero.";
+    }
+
+    return `**${a / b}**`;
+  }
+
+
+  /* Percentage */
+
+  match = text.match(
+    /^(-?\d+(?:\.\d+)?)\s*%\s*of\s*(-?\d+(?:\.\d+)?)$/
+  );
+
+  if (match) {
+
+    const percent = Number(match[1]);
+    const number = Number(match[2]);
+
+    return `**${(percent / 100) * number}**`;
+  }
+
+
+  /* Simple science */
+
+  if (text.includes("photosynthesis")) {
+
+    return "🌱 Photosynthesis is the process plants use to make food using sunlight, water and carbon dioxide.";
+  }
+
+
+  if (
+    text.includes("what is ai") ||
+    text.includes("artificial intelligence")
+  ) {
+
+    return "🤖 Artificial intelligence (AI) is technology that allows computers to perform tasks that normally need human intelligence.";
+  }
+
+
+  if (text.includes("gravity")) {
+
+    return "🌍 Gravity is a force that pulls objects toward each other. Earth's gravity keeps us on the ground.";
+  }
+
+
+  if (text.includes("water")) {
+
+    return "💧 Water is made of hydrogen and oxygen. Its chemical formula is H₂O.";
+  }
+
+
+  if (text.includes("sun")) {
+
+    return "☀️ The Sun is a star at the center of our solar system.";
+  }
+
+
+  if (text.includes("capital of india")) {
+
+    return "🇮🇳 The capital of India is New Delhi.";
+  }
+
+
+  /* Offline fallback */
+
+  return "📴 I'm currently in offline mode. I can answer basic questions and calculations, but I need the internet and Gemini AI for more advanced questions.";
+}
+
+
+/* =========================
+   ONLINE AI
+========================= */
+
+async function onlineAI(message) {
+
+  const response = await fetch("/api/chat", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+      message: message
+    })
+
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || "AI request failed"
+    );
+  }
+
+  if (
+    !data.answer ||
+    typeof data.answer !== "string"
+  ) {
+    throw new Error("Empty AI response");
+  }
+
+  return data.answer;
+}
+
+
+/* =========================
+   SEND MESSAGE
+========================= */
+
+async function sendMessage() {
+
+  const userMessage = input.value.trim();
+
+  if (!userMessage) return;
+
+  const selectedMode = modeSelect.value;
+
+  input.value = "";
+
+  sendBtn.disabled = true;
+
+  addMessage(userMessage, "user");
+
+  conversation.push({
+    role: "user",
+    content: userMessage
+  });
+
+  showTyping();
+
+  statusText.textContent =
+    selectedMode.toUpperCase() + " • Thinking...";
+
+
+  try {
+
+    let answer = "";
+
+
+    /* =====================
+       OFFLINE
+    ===================== */
+
+    if (selectedMode === "offline") {
+
+      statusText.textContent =
+        "OFFLINE • Browser AI";
+
+      await new Promise(
+        resolve => setTimeout(resolve, 300)
+      );
+
+      answer = offlineAI(userMessage);
+    }
+
+
+    /* =====================
+       ONLINE
+    ===================== */
+
+    else if (selectedMode === "online") {
+
+      statusText.textContent =
+        "ONLINE • Gemini AI";
+
+      answer = await onlineAI(userMessage);
+    }
+
+
+    /* =====================
+       AUTO
+    ===================== */
+
+    else {
+
+      if (navigator.onLine) {
+
+        try {
+
+          statusText.textContent =
+            "AUTO • Trying online AI...";
+
+          answer = await onlineAI(userMessage);
+
+          statusText.textContent =
+            "AUTO • Online AI";
+
+        } catch (error) {
+
+          console.log(
+            "Online AI failed. Using offline mode.",
+            error
+          );
+
+          statusText.textContent =
+            "AUTO • Switching offline...";
+
+          await new Promise(
+            resolve => setTimeout(resolve, 300)
+          );
+
+          answer = offlineAI(userMessage);
+
+          statusText.textContent =
+            "AUTO • Offline fallback";
+        }
+
+      } else {
+
+        statusText.textContent =
+          "AUTO • Offline";
+
+        answer = offlineAI(userMessage);
+      }
+    }
+
+
+    removeTyping();
+
+    addMessage(answer, "assistant");
+
+    conversation.push({
+      role: "assistant",
+      content: answer
+    });
+
+  } catch (error) {
+
+    removeTyping();
+
+    console.error(error);
+
+
+    if (selectedMode === "online") {
+
+      addMessage(
+        "⚠️ Online AI is currently unavailable. Try AUTO mode or OFFLINE mode.",
+        "assistant"
+      );
+
+      statusText.textContent =
+        "ONLINE • Error";
+
+    } else {
+
+      addMessage(
+        "⚠️ Something went wrong.",
+        "assistant"
+      );
+
+      statusText.textContent =
+        "Error";
+    }
+
+  } finally {
+
+    sendBtn.disabled = false;
+
+    input.focus();
+  }
+}
+
+
+/* =========================
+   SUGGESTIONS
+========================= */
+
+function useSuggestion(text) {
+
+  input.value = text;
+
+  input.focus();
+
+  sendMessage();
+}
+
+
+/* =========================
+   CLEAR CHAT
+========================= */
+
+function clearChat() {
+
+  conversation = [];
+
+  chat.innerHTML = `
+
+    <div class="welcome" id="welcome">
+
+      <h1>Riviz AI</h1>
+
+      <p>
+        Your smart AI assistant. Online, offline, or automatic.
+      </p>
+
+      <div class="suggestions">
+
+        <div class="suggestion"
+          onclick="useSuggestion('Explain photosynthesis simply')">
+          🌱 Explain photosynthesis
+        </div>
+
+        <div class="suggestion"
+          onclick="useSuggestion('Tell me a funny joke')">
+          😂 Tell me a joke
+        </div>
+
+        <div class="suggestion"
+          onclick="useSuggestion('Give me a cool science fact')">
+          🔬 Science fact
+        </div>
+
+        <div class="suggestion"
+          onclick="useSuggestion('What is artificial intelligence?')">
+          🤖 What is AI?
+        </div>
+
       </div>
 
     </div>
-  </main>
 
-  <div class="input-area">
-    <div class="input-box">
-      <input
-        id="messageInput"
-        type="text"
-        placeholder="Message Riviz AI..."
-        autocomplete="off"
-      />
+  `;
 
-      <button id="sendBtn" onclick="sendMessage()">➤</button>
-    </div>
+  statusText.textContent =
+    modeSelect.value.toUpperCase() + " mode";
+}
 
-    <div class="status" id="status">
-      AUTO mode
-    </div>
-  </div>
 
-  <script>
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("messageInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const statusText = document.getElementById("status");
-    const modeSelect = document.getElementById("mode");
-    const welcome = document.getElementById("welcome");
+/* =========================
+   MODE SWITCH
+========================= */
 
-    let conversation = [];
+modeSelect.addEventListener(
+  "change",
+  () => {
 
-    /*
-      Converts Gemini Markdown into safe HTML.
+    const mode = modeSelect.value;
 
-      Most importantly:
-      **text** -> <strong>text</strong>
+    if (mode === "online") {
 
-      This fixes the problem where Riviz was showing:
-      **4**
+      statusText.textContent =
+        "ONLINE • Gemini AI";
 
-      instead of:
-      4 in bold.
-    */
-    function renderMarkdown(text) {
-      if (!text) return "";
-
-      // Escape HTML first for safety
-      let html = text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-      // Code blocks
-      html = html.replace(
-        /```([\s\S]*?)```/g,
-        '<pre><code>$1</code></pre>'
-      );
-
-      // Inline code
-      html = html.replace(
-        /`([^`]+)`/g,
-        "<code>$1</code>"
-      );
-
-      // Bold
-      html = html.replace(
-        /\*\*(.*?)\*\*/g,
-        "<strong>$1</strong>"
-      );
-
-      // Italic
-      html = html.replace(
-        /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
-        "<em>$1</em>"
-      );
-
-      // Headings
-      html = html.replace(
-        /^### (.*)$/gm,
-        "<strong>$1</strong>"
-      );
-
-      html = html.replace(
-        /^## (.*)$/gm,
-        "<strong>$1</strong>"
-      );
-
-      html = html.replace(
-        /^# (.*)$/gm,
-        "<strong>$1</strong>"
-      );
-
-      // Unordered lists
-      html = html.replace(
-        /(?:^|\n)[-*] (.*)(?=\n|$)/g,
-        "<li>$1</li>"
-      );
-
-      html = html.replace(
-        /(<li>.*<\/li>)/gs,
-        "<ul>$1</ul>"
-      );
-
-      // Numbered lists
-      html = html.replace(
-        /(?:^|\n)\d+\. (.*)(?=\n|$)/g,
-        "<li>$1</li>"
-      );
-
-      // Line breaks
-      html = html.replace(/\n/g, "<br>");
-
-      return html;
     }
 
-    function addMessage(text, type) {
-      if (welcome) {
-        welcome.style.display = "none";
-      }
+    else if (mode === "offline") {
 
-      const message = document.createElement("div");
-      message.className = "message " + type;
+      statusText.textContent =
+        "OFFLINE • Browser AI";
 
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-
-      if (type === "assistant") {
-        bubble.innerHTML = renderMarkdown(text);
-      } else {
-        // User messages stay plain text
-        bubble.textContent = text;
-      }
-
-      message.appendChild(bubble);
-      chat.appendChild(message);
-
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth"
-      });
-
-      return message;
     }
 
-    function showTyping() {
-      const message = document.createElement("div");
-      message.className = "message assistant";
-      message.id = "typingMessage";
+    else {
 
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-
-      bubble.innerHTML = `
-        <div class="typing">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      `;
-
-      message.appendChild(bubble);
-      chat.appendChild(message);
-
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth"
-      });
+      statusText.textContent =
+        "AUTO • Online + Offline fallback";
     }
 
-    function removeTyping() {
-      const typing = document.getElementById("typingMessage");
+  }
+);
 
-      if (typing) {
-        typing.remove();
-      }
-    }
 
-    async function sendMessage() {
-      const userMessage = input.value.trim();
+/* =========================
+   ENTER KEY
+========================= */
 
-      if (!userMessage) return;
+input.addEventListener(
+  "keydown",
+  event => {
 
-      input.value = "";
-      sendBtn.disabled = true;
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
 
-      addMessage(userMessage, "user");
+      event.preventDefault();
 
-      conversation.push({
-        role: "user",
-        content: userMessage
-      });
-
-      showTyping();
-
-      statusText.textContent = "Riviz is thinking...";
-
-      try {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: userMessage
-          })
-        });
-
-        const data = await response.json();
-
-        removeTyping();
-
-        if (!response.ok) {
-          throw new Error(data.error || "AI request failed");
-        }
-
-        const answer =
-          data.answer ||
-          "Sorry, I couldn't generate a response.";
-
-        addMessage(answer, "assistant");
-
-        conversation.push({
-          role: "assistant",
-          content: answer
-        });
-
-        statusText.textContent =
-          modeSelect.value.toUpperCase() + " mode";
-
-      } catch (error) {
-        removeTyping();
-
-        console.error(error);
-
-        addMessage(
-          "⚠️ Sorry, I couldn't connect to the AI server.",
-          "assistant"
-        );
-
-        statusText.textContent = "Connection error";
-
-      } finally {
-        sendBtn.disabled = false;
-        input.focus();
-      }
-    }
-
-    function useSuggestion(text) {
-      input.value = text;
-      input.focus();
       sendMessage();
     }
 
-    function clearChat() {
-      conversation = [];
+  }
+);
 
-      chat.innerHTML = `
-        <div class="welcome" id="welcome">
-          <h1>Riviz AI</h1>
-          <p>Your smart AI assistant. Ask anything and let Riviz help you.</p>
 
-          <div class="suggestions">
-            <div class="suggestion" onclick="useSuggestion('Explain photosynthesis simply')">
-              🌱 Explain photosynthesis
-            </div>
+/* =========================
+   INTERNET STATUS
+========================= */
 
-            <div class="suggestion" onclick="useSuggestion('Tell me a funny joke')">
-              😂 Tell me a joke
-            </div>
+window.addEventListener(
+  "online",
+  () => {
 
-            <div class="suggestion" onclick="useSuggestion('Give me a cool science fact')">
-              🔬 Science fact
-            </div>
-
-            <div class="suggestion" onclick="useSuggestion('What is artificial intelligence?')">
-              🤖 What is AI?
-            </div>
-          </div>
-        </div>
-      `;
+    if (modeSelect.value === "auto") {
 
       statusText.textContent =
-        modeSelect.value.toUpperCase() + " mode";
+        "AUTO • Internet connected";
     }
 
-    modeSelect.addEventListener("change", () => {
-      statusText.textContent =
-        modeSelect.value.toUpperCase() + " mode";
-    });
+  }
+);
 
-    input.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        sendMessage();
-      }
-    });
-  </script>
+
+window.addEventListener(
+  "offline",
+  () => {
+
+    if (modeSelect.value === "auto") {
+
+      statusText.textContent =
+        "AUTO • Offline";
+    }
+
+  }
+);
+
+</script>
 
 </body>
 </html>
